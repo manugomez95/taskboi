@@ -1,0 +1,69 @@
+name: Bug report
+description: Report a reproducible Taskboi problem
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues first. For vulnerabilities, stop and follow the [security policy](https://github.com/manugomez95/taskboi/blob/main/SECURITY.md). Never include credentials, private data, production identifiers, or account content.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Flutter client
+        - Supabase/database
+        - Local MCP server
+        - Remote MCP Worker
+        - Documentation or tooling
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or revision
+      description: App version, Git commit, or branch using only public information.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, device, Flutter/Dart/Node versions, and local or hosted mode. Redact identifiers.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use fake data and a minimal reproducible sequence.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Paste sanitized logs only; do not attach credentials or user data.
+    validations:
+      required: true
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional sanitized context
+      description: Add screenshots or logs only when they contain no private data, credentials, or production identifiers.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety checks
+      options:
+        - label: I searched existing issues and this is not a security vulnerability.
+          required: true
+        - label: I removed credentials, private data, account content, and production identifiers.
+          required: true

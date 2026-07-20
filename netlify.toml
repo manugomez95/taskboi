@@ -1,0 +1,24 @@
+[build]
+  publish = "build/web"
+  command = """
+    export GITLEAKS_BIN="$(./scripts/bootstrap-gitleaks.sh)" && \
+    export PUBLIC_CONFIG_FILE="/tmp/taskboi-public-config.json" && \
+    trap 'rm -f "$PUBLIC_CONFIG_FILE"' EXIT && \
+    node -e 'const fs=require("fs"); fs.writeFileSync(process.env.PUBLIC_CONFIG_FILE, JSON.stringify({PUBLIC_SUPABASE_URL:process.env.PUBLIC_SUPABASE_URL,PUBLIC_SUPABASE_ANON_KEY:process.env.PUBLIC_SUPABASE_ANON_KEY}), {mode:0o600})' && \
+    ./scripts/validate-public-config.sh "$PUBLIC_CONFIG_FILE" && \
+    if [ "$(git rev-parse --is-shallow-repository)" = true ]; then git fetch --unshallow; fi && \
+    ./scripts/scan-secrets.sh history && \
+    rm -rf flutter && \
+    git clone https://github.com/flutter/flutter.git --filter=blob:none --no-checkout flutter && \
+    git -C flutter checkout --detach "$FLUTTER_REVISION" && \
+    export PATH="$PATH:$PWD/flutter/bin" && \
+    flutter precache --web && \
+    flutter pub get --enforce-lockfile && \
+    flutter build web --release --dart-define-from-file="$PUBLIC_CONFIG_FILE" && \
+    ./scripts/scan-secrets.sh artifacts build/web && \
+    rm -rf flutter
+  """
+
+[build.environment]
+  # Flutter 3.44.1 commit; immutable even if the release tag moves.
+  FLUTTER_REVISION = "924134a44c189315be2148659913dda1671cbe99"

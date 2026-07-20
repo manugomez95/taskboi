@@ -1,0 +1,17 @@
+# Replace with the operator's own project ID, or remove this line and run
+# `supabase link` for a local/operator-owned project.
+project_id = "public-template-project-id"
+
+# mcp-api authenticates with its own API keys (see validateApiKey), not
+# Supabase JWTs. With verify_jwt enabled the gateway rejects every request
+# with a 401 before the function runs.
+[functions.mcp-api]
+verify_jwt = false
+
+# Invoked only by a Database Webhook authenticated with DATABASE_WEBHOOK_SECRET.
+# User JWTs are deliberately not treated as database-webhook authentication.
+[functions.notify-assignee]
+verify_jwt = false
+
+[functions.comment-images]
+verify_jwt = true

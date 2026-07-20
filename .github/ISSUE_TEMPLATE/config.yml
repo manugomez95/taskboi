@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security reporting instructions
+    url: https://github.com/manugomez95/taskboi/blob/main/SECURITY.md
+    about: Check the documented options and never disclose vulnerability details publicly.
+# Maintainer decision required: add a support contact link only after choosing a
+# monitored channel and publishing its response expectations in README.md.

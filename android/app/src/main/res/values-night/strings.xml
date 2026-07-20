@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Taskboi</string>
+    <string name="widget_description">View and manage your today\'s tasks at a glance</string>
+    <string name="widget_name">Today Tasks</string>
+</resources>

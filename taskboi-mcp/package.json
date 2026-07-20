@@ -1,0 +1,41 @@
+{
+  "name": "taskboi-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Taskboi - AI-powered task management",
+  "main": "dist/index.js",
+  "bin": {
+    "taskboi-mcp": "./bin/taskboi-mcp.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "task-management",
+    "taskboi",
+    "claude",
+    "ai"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ]
+}

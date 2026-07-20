@@ -1,0 +1,108 @@
+name: Release candidate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release-candidate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_REVISION: 924134a44c189315be2148659913dda1671cbe99
+  NODE_VERSION: 22.14.0
+
+jobs:
+  package:
+    name: Build attestable release candidate
+    if: github.ref == 'refs/heads/main'
+    environment: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: taskboi-mcp/package-lock.json
+      - name: Install pinned Flutter
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          git -C "$RUNNER_TEMP/flutter" checkout --detach "$FLUTTER_REVISION"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Scan full Git history
+        shell: bash
+        run: scripts/ci/secret-scan.sh history
+      - name: Build locked artifacts
+        shell: bash
+        run: |
+          config_file="$(mktemp "$RUNNER_TEMP/taskboi-public-config.XXXXXX.json")"
+          trap 'rm -f "$config_file"' EXIT
+          printf '%s\n' '{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-release-value"}' > "$config_file"
+          flutter pub get --enforce-lockfile
+          flutter build web --release --dart-define-from-file="$config_file"
+          npm ci --ignore-scripts --prefix taskboi-mcp
+          npm run build --prefix taskboi-mcp
+          mkdir -p release
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
+            -czf release/taskboi-web.tar.gz -C build/web .
+          (cd taskboi-mcp && npm pack --pack-destination "$PWD/../release")
+      - uses: anchore/sbom-action@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
+        with:
+          path: .
+          format: spdx-json
+          output-file: release/taskboi.spdx.json
+          upload-artifact: false
+      - name: Generate committed-input compliance inventory
+        shell: bash
+        run: |
+          scripts/generate-compliance-inventory.py --revision "$GITHUB_SHA" --output-dir release
+          scripts/validate-spdx.py release/oss-compliance-sbom.spdx.json
+          scripts/validate-spdx.py release/taskboi.spdx.json
+      - name: Verify actual candidate contents against inventory scope
+        shell: bash
+        run: |
+          npm_package="$(find release -maxdepth 1 -type f -name 'taskboi-mcp-*.tgz' -print -quit)"
+          test -n "$npm_package"
+          scripts/verify-release-candidate.py \
+            --inventory release/oss-compliance-inventory.json \
+            --web-archive release/taskboi-web.tar.gz \
+            --npm-package "$npm_package" \
+            --npm-source taskboi-mcp \
+            --output release/release-candidate-inventory-comparison.json
+      - name: Generate and verify candidate checksums
+        working-directory: release
+        shell: bash
+        run: |
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\n' \
+            | LC_ALL=C sort \
+            | xargs sha256sum > SHA256SUMS
+          sha256sum --check --strict SHA256SUMS
+      - name: Scan release artifacts
+        shell: bash
+        run: scripts/ci/secret-scan.sh artifacts release
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
+        with:
+          subject-path: release/*
+      - uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3.0.0
+        with:
+          subject-path: release/taskboi-web.tar.gz
+          sbom-path: release/taskboi.spdx.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: taskboi-release-candidate-${{ github.sha }}
+          path: release/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
