@@ -1,0 +1,16 @@
+name: Security contact request
+description: Ask for a private reporting channel without disclosing vulnerability details
+title: "security: request private reporting channel"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this public form only when the repository's Security tab does not display a private **Report a vulnerability** option. Do not include vulnerability details, reproduction steps, affected versions, credentials, personal data, production identifiers, or revealing links or attachments. Maintainers can use this request to arrange a private reporting channel.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-request safety check
+      options:
+        - label: I included only a request for a private reporting channel and no vulnerability or sensitive details.
+          required: true

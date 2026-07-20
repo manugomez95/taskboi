@@ -1,0 +1,11 @@
+# Literal reviewed set of eight dependency-lockfile checksum false positives.
+# Each entry records only the observed fingerprint, path, rule, and line; it
+# does not claim additional provenance beyond those reviewed scan coordinates.
+0265074fe4c88dfdecf042eb24e2fc34bc710cc6:macos/Podfile.lock:generic-api-key:144
+0265074fe4c88dfdecf042eb24e2fc34bc710cc6:macos/Podfile.lock:generic-api-key:153
+9be40d47b4861ffdaa106588a003d1ac6ad1429e:macos/Podfile.lock:generic-api-key:87
+9be40d47b4861ffdaa106588a003d1ac6ad1429e:macos/Podfile.lock:generic-api-key:93
+acaececed0f18b87a85ce3bfeb433c09f324350b:macos/Podfile.lock:generic-api-key:144
+acaececed0f18b87a85ce3bfeb433c09f324350b:macos/Podfile.lock:generic-api-key:153
+00068f6759b1041a66581c251c8a6154f4608e60:macos/Podfile.lock:generic-api-key:87
+00068f6759b1041a66581c251c8a6154f4608e60:macos/Podfile.lock:generic-api-key:93

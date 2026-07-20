@@ -1,0 +1,430 @@
+{
+  "@@locale": "en",
+  "appName": "Taskboi",
+  "tagline": "Stay organized. Get things done.",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "createAccount": "Create Account",
+  "signUpToGetStarted": "Sign up to get started",
+  "continueWithGoogle": "Continue with Google",
+  "or": "or",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "nameOptional": "Name (optional)",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "accountCreatedVerifyEmail": "Account created! Please check your email to verify.",
+  "pleaseEnterEmail": "Please enter your email",
+  "pleaseEnterValidEmail": "Please enter a valid email",
+  "pleaseEnterPassword": "Please enter your password",
+  "pleaseEnterAPassword": "Please enter a password",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "signOut": "Sign out",
+  "signOutSubtitle": "Sign out of your account",
+  "user": "User",
+  "inbox": "Inbox",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "upcoming": "Upcoming",
+  "thisWeekend": "This Weekend",
+  "nextWeek": "Next Week",
+  "projects": "Projects",
+  "noProjectsYet": "No projects yet",
+  "createProject": "Create project",
+  "editProject": "Edit Project",
+  "deleteProject": "Delete Project",
+  "deleteProjectConfirmation": "Are you sure you want to delete \"{projectName}\"? All tasks in this project will also be deleted.",
+  "@deleteProjectConfirmation": {
+    "placeholders": {
+      "projectName": {
+        "type": "String"
+      }
+    }
+  },
+  "projectName": "Project name",
+  "enterProjectName": "Enter project name",
+  "pleaseEnterProjectName": "Please enter a project name",
+  "color": "Color",
+  "edit": "Edit",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "save": "Save",
+  "create": "Create",
+  "add": "Add",
+  "done": "Done",
+  "discardChangesTitle": "Discard changes?",
+  "discardChangesMessage": "You have unsaved changes. If you leave now, they will be lost.",
+  "discard": "Discard",
+  "keepEditing": "Keep editing",
+  "settings": "Settings",
+  "integrations": "Integrations",
+  "apiKeys": "API Keys",
+  "mcpIntegration": "MCP Integration",
+  "apiKeysSubtitle": "MCP Integration for AI assistants",
+  "generateNewKey": "Generate New Key",
+  "generateApiKey": "Generate API Key",
+  "mcpIntegrationDescription": "Generate an API key to connect Taskboi with AI assistants like Claude or Cursor using the Model Context Protocol (MCP).",
+  "newApiKeyCreated": "New API Key Created",
+  "copyKeyNow": "Copy this key now - it won't be shown again!",
+  "apiKeyCopied": "API key copied to clipboard",
+  "apiKeyDeleted": "API key deleted",
+  "apiKeyDeleteFailed": "API key could not be deleted. Please try again.",
+  "dismiss": "Dismiss",
+  "noApiKeysYet": "No API keys yet",
+  "createOneToConnect": "Create one to connect with MCP clients",
+  "deleteApiKey": "Delete API Key",
+  "deleteApiKeyConfirmation": "Are you sure you want to delete \"{keyName}\"?\n\nAny applications using this key will lose access.",
+  "@deleteApiKeyConfirmation": {
+    "placeholders": {
+      "keyName": {
+        "type": "String"
+      }
+    }
+  },
+  "keyName": "Key Name",
+  "keyNameHint": "e.g., Claude Desktop, Cursor",
+  "giveKeyName": "Give this key a name to identify it later.",
+  "generate": "Generate",
+  "createdDate": "Created {date}",
+  "@createdDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "lastUsedDate": "Last used {date}",
+  "@lastUsedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appearance": "Appearance",
+  "theme": "Theme",
+  "mode": "Mode",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "language": "Language",
+  "languageSubtitle": "Choose your preferred language",
+  "languageSystem": "System",
+  "languageEnglish": "English",
+  "languageSpanish": "Spanish",
+  "data": "Data",
+  "exportBackup": "Export Backup",
+  "exportBackupSubtitle": "Save all data to a JSON file",
+  "exporting": "Exporting...",
+  "importBackup": "Import Backup",
+  "importBackupSubtitle": "Restore data from a JSON file",
+  "importing": "Importing...",
+  "importBackupWarning": "This will replace all your existing data with the backup data. This action cannot be undone.\n\nAre you sure you want to continue?",
+  "replaceData": "Replace Data",
+  "backupExportedSuccessfully": "Backup exported successfully",
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "importedProjectsAndTasks": "Imported {projectCount} projects and {taskCount} tasks",
+  "@importedProjectsAndTasks": {
+    "placeholders": {
+      "projectCount": {
+        "type": "int"
+      },
+      "taskCount": {
+        "type": "int"
+      }
+    }
+  },
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "account": "Account",
+  "deleteAccount": "Delete Account",
+  "deleteAccountSubtitle": "Permanently delete your account and data",
+  "couldNotOpenDeleteAccountPage": "Could not open delete account page",
+  "about": "About",
+  "aboutTaskboi": "About Taskboi",
+  "aboutSubtitle": "Version, privacy policy, and more",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "appDescription": "A simple, beautiful task management app to help you stay organized and productive.",
+  "couldNotOpenLink": "Could not open link",
+  "allRightsReserved": "\u00a9 {year} Taskboi. All rights reserved.",
+  "@allRightsReserved": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "newTask": "New Task",
+  "editTask": "Edit Task",
+  "newSubtask": "New Subtask",
+  "editSubtask": "Edit Subtask",
+  "taskName": "Task name",
+  "subtaskName": "Subtask name",
+  "description": "Description",
+  "pleaseEnterTaskName": "Please enter a task name",
+  "project": "Project",
+  "dueDate": "Due date",
+  "addDueDate": "Add due date",
+  "date": "Date",
+  "pickADate": "Pick a date",
+  "pickATime": "Pick a time",
+  "removeTime": "Remove time",
+  "removeDateAndRecurrence": "Remove date & recurrence",
+  "priority": "Priority",
+  "addPriority": "Add priority",
+  "priorityUrgent": "Urgent",
+  "priorityHigh": "High",
+  "priorityNormal": "Normal",
+  "priorityMedium": "Medium",
+  "priorityLow": "Low",
+  "priorityNone": "None",
+  "priorityN": "Priority {n}",
+  "@priorityN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteTask": "Delete task",
+  "deleteSubtask": "Delete subtask",
+  "deleteTaskConfirmation": "Are you sure you want to delete \"{taskTitle}\"?",
+  "@deleteTaskConfirmation": {
+    "placeholders": {
+      "taskTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTaskWithSubtasks": "Are you sure you want to delete \"{taskTitle}\"?\n\nThis will also delete {subtaskCount} subtask(s).",
+  "@deleteTaskWithSubtasks": {
+    "placeholders": {
+      "taskTitle": {
+        "type": "String"
+      },
+      "subtaskCount": {
+        "type": "int"
+      }
+    }
+  },
+  "taskDeleted": "\"{taskTitle}\" deleted",
+  "@taskDeleted": {
+    "placeholders": {
+      "taskTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "taskCompleted": "\"{taskTitle}\" completed",
+  "@taskCompleted": {
+    "placeholders": {
+      "taskTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "taskMarkedIncomplete": "\"{taskTitle}\" marked incomplete",
+  "@taskMarkedIncomplete": {
+    "placeholders": {
+      "taskTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "taskMovedTo": "\"{taskTitle}\" moved to {projectName}",
+  "@taskMovedTo": {
+    "placeholders": {
+      "taskTitle": {
+        "type": "String"
+      },
+      "projectName": {
+        "type": "String"
+      }
+    }
+  },
+  "undo": "Undo",
+  "reschedule": "Reschedule",
+  "moveToProject": "Move to Project",
+  "setPriority": "Set Priority",
+  "addSubtask": "Add Subtask",
+  "markComplete": "Mark Complete",
+  "markIncomplete": "Mark Incomplete",
+  "deleteWithSubtasks": "Delete ({count} subtasks)",
+  "@deleteWithSubtasks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "subtasks": "Subtasks",
+  "subtasksCount": "{completed}/{total}",
+  "@subtasksCount": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "addASubtask": "Add a subtask",
+  "parentTask": "Parent Task",
+  "errorLoadingProjects": "Error loading projects",
+  "comments": "Comments",
+  "commentDeleted": "Comment deleted",
+  "addComment": "Add a comment...",
+  "editComment": "Edit comment...",
+  "sortTasks": "Sort tasks",
+  "sortManual": "Manual",
+  "sortPriority": "Priority",
+  "sortDueDate": "Due date",
+  "sortTitle": "Title",
+  "sortDateAdded": "Date added",
+  "showCompleted": "Show completed",
+  "hideCompleted": "Hide completed",
+  "completedCount": "Completed ({count})",
+  "@completedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noTasksDueToday": "No tasks due today",
+  "noUpcomingTasks": "No upcoming tasks",
+  "yourInboxIsEmpty": "Your inbox is empty",
+  "noTasksInProject": "No tasks in this project",
+  "tapToAddTask": "Tap + to add a task",
+  "loading": "Loading...",
+  "error": "Error: {error}",
+  "@error": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "recurrenceNone": "None",
+  "recurrenceDaily": "Daily",
+  "recurrenceWeekly": "Weekly",
+  "recurrenceMonthly": "Monthly",
+  "recurrenceYearly": "Yearly",
+  "recurrenceWeekdays": "Weekdays",
+  "recurrenceEveryNDays": "Every {n} days",
+  "@recurrenceEveryNDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceEveryNWeeks": "Every {n} weeks",
+  "@recurrenceEveryNWeeks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceEveryNMonths": "Every {n} months",
+  "@recurrenceEveryNMonths": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "recurrenceWeeklyOn": "Weekly on {days}",
+  "@recurrenceWeeklyOn": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "recurring": "Recurring",
+  "dayMon": "Mon",
+  "dayTue": "Tue",
+  "dayWed": "Wed",
+  "dayThu": "Thu",
+  "dayFri": "Fri",
+  "daySat": "Sat",
+  "daySun": "Sun",
+  "offline": "Offline",
+  "online": "Online",
+  "syncStatus": "Sync Status",
+  "syncing": "Syncing {count}",
+  "@syncing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allChangesSynced": "All changes synced",
+  "changesPendingSync": "{count} changes pending sync",
+  "@changesPendingSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checking": "Checking...",
+  "changesWillSyncWhenOnline": "Changes will sync when you go online",
+  "noDate": "No Date",
+  "todayYesterday": "Today {time}",
+  "@todayYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "yesterdayTime": "Yesterday {time}",
+  "@yesterdayTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "getTheApp": "Get the app",
+  "androidAppAvailable": "Taskboi is available on Android for a better mobile experience!",
+  "pageNotFound": "Page not found: {path}",
+  "@pageNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "camera": "Camera",
+  "gallery": "Gallery"
+}

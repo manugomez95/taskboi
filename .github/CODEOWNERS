@@ -1,0 +1,15 @@
+# Default ownership for review routing. GitHub repository settings determine
+# whether this review is required.
+* @manugomez95
+
+# Security-sensitive backend and release operations.
+/supabase/ @manugomez95
+/taskboi-mcp/workers/ @manugomez95
+/scripts/ @manugomez95
+/.github/ @manugomez95
+/SECURITY.md @manugomez95
+/CODE_OF_CONDUCT.md @manugomez95
+/CONTRIBUTING.md @manugomez95
+/docs/RELEASE_POLICY.md @manugomez95
+/docs/RELEASE_BLOCKERS.md @manugomez95
+/LICENSE @manugomez95

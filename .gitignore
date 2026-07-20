@@ -1,0 +1,101 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Environment variables
+.env
+*.env.local
+public-config.local.json
+
+# Generated files that shouldn't be committed
+# Note: *.g.dart and *.freezed.dart ARE committed (needed for build)
+
+# Coverage
+coverage/
+
+# Podfile.lock for iOS (regenerated on pod install)
+ios/Podfile.lock
+
+# macOS
+macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+
+# Linux
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+
+# MCP Server (taskboi-mcp)
+taskboi-mcp/node_modules/
+taskboi-mcp/dist/
+
+# MCP config (contains API keys)
+.mcp.json
+
+# Supabase temp files
+supabase/.temp/
+taskboi-mcp/supabase/
+
+# Android signing
+android/key.properties
+*.jks
+*.keystore
+
+# Fastlane
+fastlane/play-store-key.json
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+fastlane/build/
+fastlane/README.md
+Gemfile.lock
+*.dmg
+*.pkg
+*.aab
+*.apk
+.playwright-mcp/*

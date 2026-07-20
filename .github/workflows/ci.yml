@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_REVISION: 924134a44c189315be2148659913dda1671cbe99
+  NODE_VERSION: 22.14.0
+  DENO_VERSION: 2.9.3
+
+jobs:
+  flutter:
+    name: Flutter tests and analyze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install pinned Flutter
+        shell: bash
+        run: |
+          git clone --filter=blob:none --no-checkout https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          git -C "$RUNNER_TEMP/flutter" checkout --detach "$FLUTTER_REVISION"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Install locked Dart dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Verify committed generated sources
+        shell: bash
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          scripts/ci/check-generated-output.sh
+      - name: Analyze
+        run: flutter analyze
+      - name: Test with inert public config
+        shell: bash
+        run: |
+          config_file="$(mktemp "$RUNNER_TEMP/taskboi-public-config.XXXXXX.json")"
+          trap 'rm -f "$config_file"' EXIT
+          printf '%s\n' '{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-ci-value"}' > "$config_file"
+          flutter test --dart-define-from-file="$config_file"
+
+  mcp:
+    name: MCP build and typecheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: taskboi-mcp
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: taskboi-mcp/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Build and typecheck
+        run: npm run build
+
+  worker:
+    name: Worker tests and typecheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: taskboi-mcp/workers
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: taskboi-mcp/workers/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run typecheck
+      - name: Reproducible dry-run build
+        run: npm run build
+
+  backend-static:
+    name: Migrations and Supabase functions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+      - name: Check migrations and pinned imports
+        run: scripts/ci/check-migrations.sh
+      - name: Format, lint, and typecheck functions
+        run: deno task check
+      - name: Test functions
+        run: deno task test
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run value-suppressed full-history gate
+        shell: bash
+        run: scripts/ci/secret-scan.sh history
+
+  workflow-regression:
+    name: Workflow regression checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Verify workflow safeguards
+        run: scripts/ci/test-workflows.sh
