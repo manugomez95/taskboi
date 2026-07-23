@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertBindingsPreserved } from "../../../scripts/worker-binding-comparator.mjs";
+import { assertBindingsPreserved, assertRequiredOAuthBindings } from "../../../scripts/worker-binding-comparator.mjs";
 
 describe("deployment candidate binding comparison", () => {
   it("deeply compares complete non-secret bindings independent of key order", () => {
@@ -48,5 +48,32 @@ describe("deployment candidate binding comparison", () => {
       const candidate = withoutObsoleteSecret.map((item) => item.name === binding.name ? { ...item, migration_test_change: true } : item);
       expect(() => assertBindingsPreserved(active, candidate)).toThrow(`Candidate changed binding ${binding.name}`);
     }
+  });
+});
+
+describe("required deployment candidate bindings", () => {
+  const requiredBindings = [
+    { name: "OAUTH_STORE", type: "durable_object_namespace" },
+    { name: "OAUTH_ISSUER", type: "plain_text" },
+    { name: "TASKBOI_API_BASE_URL", type: "plain_text" },
+    { name: "OAUTH_ENCRYPTION_KEY", type: "secret_text" },
+  ];
+
+  it("accepts TASKBOI_API_BASE_URL as a plaintext binding", () => {
+    expect(() => assertRequiredOAuthBindings(requiredBindings)).not.toThrow();
+  });
+
+  it("rejects a missing TASKBOI_API_BASE_URL binding", () => {
+    const bindings = requiredBindings.filter((binding) => binding.name !== "TASKBOI_API_BASE_URL");
+
+    expect(() => assertRequiredOAuthBindings(bindings)).toThrow("Version lacks plaintext TASKBOI_API_BASE_URL");
+  });
+
+  it("rejects a non-plaintext TASKBOI_API_BASE_URL binding", () => {
+    const bindings = requiredBindings.map((binding) =>
+      binding.name === "TASKBOI_API_BASE_URL" ? { ...binding, type: "secret_text" } : binding
+    );
+
+    expect(() => assertRequiredOAuthBindings(bindings)).toThrow("Version lacks plaintext TASKBOI_API_BASE_URL");
   });
 });

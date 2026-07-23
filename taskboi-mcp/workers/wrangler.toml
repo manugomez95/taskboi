@@ -4,7 +4,8 @@ compatibility_date = "2025-01-20"
 compatibility_flags = ["nodejs_compat"]
 
 # Required deployment bindings are intentionally not given placeholder values.
-# Configure required OAUTH_ISSUER as the canonical HTTPS origin and
+# Configure required TASKBOI_API_BASE_URL outside this file as the canonical
+# MCP API endpoint. Configure OAUTH_ISSUER as the canonical HTTPS origin and
 # OAUTH_ENCRYPTION_KEY as a Worker secret before deployment. OAUTH_CLIENTS is an
 # optional compatibility allowlist for clients with a prior relationship.
 # OAUTH_CLIENT_METADATA_ALLOWED_ORIGINS is an optional plaintext JSON array of

@@ -1,3 +1,5 @@
+import { apiRequestUrl, normalizeTaskboiApiBaseUrl } from "./api-base-url";
+
 const CODE_TTL_SECONDS = 300;
 export const TOKEN_TTL_SECONDS = 3600;
 const MAX_BODY_BYTES = 16_384;
@@ -19,6 +21,7 @@ export interface OAuthClientConfig {
 }
 
 export interface OAuthEnv {
+  TASKBOI_API_BASE_URL?: string;
   OAUTH_CLIENTS?: string;
   OAUTH_ENCRYPTION_KEY?: string;
   OAUTH_ISSUER?: string;
@@ -123,6 +126,7 @@ function decodeEncryptionKey(raw: string | undefined): Uint8Array {
 }
 
 export function validateOAuthConfiguration(env: OAuthEnv): void {
+  normalizeTaskboiApiBaseUrl(env.TASKBOI_API_BASE_URL);
   parseClients(env.OAUTH_CLIENTS);
   decodeEncryptionKey(env.OAUTH_ENCRYPTION_KEY);
   issuer(env.OAUTH_ISSUER);
@@ -404,7 +408,7 @@ export async function handleOAuth(request: Request, env: OAuthEnv): Promise<Resp
     const apiKey = requiredString(unique(form, "api_key"), 512);
     if (!apiKey || apiKey.length < 8) return authPage(parsed, "Invalid API key.");
     try {
-      const validation = await fetch("https://qagfzbwvlrmmdyrpuyvi.supabase.co/functions/v1/mcp-api/projects", { headers: { Authorization: `Bearer ${apiKey}` } });
+      const validation = await fetch(apiRequestUrl(normalizeTaskboiApiBaseUrl(env.TASKBOI_API_BASE_URL), "/projects"), { headers: { Authorization: `Bearer ${apiKey}` } });
       if (!validation.ok) return authPage(parsed, "Invalid API key. Please check and try again.");
     } catch { return authPage(parsed, "API key validation is temporarily unavailable."); }
     const code = randomToken(32);

@@ -36,7 +36,8 @@ Add to your `claude_desktop_config.json`:
       "command": "npx",
       "args": ["taskboi-mcp"],
       "env": {
-        "TASKBOI_API_KEY": "tk_your_api_key_here"
+        "TASKBOI_API_KEY": "tk_your_api_key_here",
+        "TASKBOI_API_BASE_URL": "https://api.example.invalid/functions/v1/mcp-api"
       }
     }
   }
@@ -54,12 +55,20 @@ Add to `.cursor/mcp.json`:
       "command": "npx",
       "args": ["taskboi-mcp"],
       "env": {
-        "TASKBOI_API_KEY": "tk_your_api_key_here"
+        "TASKBOI_API_KEY": "tk_your_api_key_here",
+        "TASKBOI_API_BASE_URL": "https://api.example.invalid/functions/v1/mcp-api"
       }
     }
   }
 }
 ```
+
+`TASKBOI_API_BASE_URL` is required and has no default. Replace the inert
+`example.invalid` URL with the endpoint supplied by your Taskboi operator. It
+must be an absolute HTTPS URL whose path is exactly `/functions/v1/mcp-api`,
+with no trailing slash, surrounding whitespace, credentials, query, or
+fragment. Invalid or missing values stop the server before the API client is
+created.
 
 ## Available Tools
 

@@ -78,17 +78,22 @@ describe("hardened OAuth worker", () => {
   afterEach(() => vi.useRealTimers());
   beforeEach(() => {
     fetchMock.disableNetConnect();
-    fetchMock.get("https://qagfzbwvlrmmdyrpuyvi.supabase.co")
+    fetchMock.get("https://api.example.invalid")
       .intercept({ path: "/functions/v1/mcp-api/projects", method: "GET" })
       .reply(200, { projects: [] });
   });
 
   it("fails closed for missing or malformed OAuth bindings", () => {
-    const configured = { OAUTH_STORE: env.OAUTH_STORE, OAUTH_CLIENTS: env.OAUTH_CLIENTS, OAUTH_ISSUER: env.OAUTH_ISSUER };
+    const configured = {
+      OAUTH_STORE: env.OAUTH_STORE,
+      OAUTH_CLIENTS: env.OAUTH_CLIENTS,
+      OAUTH_ISSUER: env.OAUTH_ISSUER,
+      TASKBOI_API_BASE_URL: env.TASKBOI_API_BASE_URL,
+    };
     expect(() => validateOAuthConfiguration(configured)).toThrow(/OAUTH_ENCRYPTION_KEY/);
     expect(() => validateOAuthConfiguration({ ...configured, OAUTH_ENCRYPTION_KEY: "not-base64" })).toThrow(/exactly 32 bytes/);
     expect(() => validateOAuthConfiguration({ ...configured, OAUTH_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" })).not.toThrow();
-    expect(() => validateOAuthConfiguration({ OAUTH_STORE: env.OAUTH_STORE, OAUTH_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", OAUTH_ISSUER: "https://issuer.example" })).not.toThrow();
+    expect(() => validateOAuthConfiguration({ OAUTH_STORE: env.OAUTH_STORE, OAUTH_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", OAUTH_ISSUER: "https://issuer.example", TASKBOI_API_BASE_URL: env.TASKBOI_API_BASE_URL })).not.toThrow();
     expect(() => validateOAuthConfiguration({ ...configured, OAUTH_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", OAUTH_ISSUER: "https://issuer.example/path" })).toThrow(/origin/);
   });
 

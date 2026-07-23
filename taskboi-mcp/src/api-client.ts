@@ -10,14 +10,15 @@ import type {
   CompleteTaskResponse,
   SuccessResponse,
 } from "./types.js";
-
-const API_BASE_URL = "https://qagfzbwvlrmmdyrpuyvi.supabase.co/functions/v1/mcp-api";
+import { apiRequestUrl, normalizeTaskboiApiBaseUrl } from "./api-base-url.js";
 
 export class TaskboiApiClient {
   private apiKey: string;
+  private apiBaseUrl: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, apiBaseUrl: string) {
     this.apiKey = apiKey;
+    this.apiBaseUrl = normalizeTaskboiApiBaseUrl(apiBaseUrl);
   }
 
   private async request<T>(
@@ -25,7 +26,7 @@ export class TaskboiApiClient {
     path: string,
     body?: Record<string, unknown>
   ): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetch(apiRequestUrl(this.apiBaseUrl, path), {
       method,
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
@@ -53,7 +54,7 @@ export class TaskboiApiClient {
   }
 
   async getProject(id: string): Promise<Project> {
-    const response = await this.request<ProjectResponse>("GET", `/projects/${id}`);
+    const response = await this.request<ProjectResponse>("GET", `/projects/${encodeURIComponent(id)}`);
     return response.project;
   }
 
@@ -81,12 +82,12 @@ export class TaskboiApiClient {
       defaultAssignee?: string;
     }
   ): Promise<Project> {
-    const response = await this.request<ProjectResponse>("PATCH", `/projects/${id}`, params);
+    const response = await this.request<ProjectResponse>("PATCH", `/projects/${encodeURIComponent(id)}`, params);
     return response.project;
   }
 
   async deleteProject(id: string): Promise<void> {
-    await this.request<SuccessResponse>("DELETE", `/projects/${id}`);
+    await this.request<SuccessResponse>("DELETE", `/projects/${encodeURIComponent(id)}`);
   }
 
   // ============================================
@@ -94,13 +95,13 @@ export class TaskboiApiClient {
   // ============================================
 
   async listTasks(projectId?: string): Promise<Task[]> {
-    const query = projectId ? `?projectId=${projectId}` : "";
+    const query = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
     const response = await this.request<TasksResponse>("GET", `/tasks${query}`);
     return response.tasks;
   }
 
   async getTask(id: string): Promise<Task> {
-    const response = await this.request<TaskResponse>("GET", `/tasks/${id}`);
+    const response = await this.request<TaskResponse>("GET", `/tasks/${encodeURIComponent(id)}`);
     return response.task;
   }
 
@@ -115,7 +116,7 @@ export class TaskboiApiClient {
   }
 
   async getSubtasks(parentId: string): Promise<Task[]> {
-    const response = await this.request<TasksResponse>("GET", `/tasks/${parentId}/subtasks`);
+    const response = await this.request<TasksResponse>("GET", `/tasks/${encodeURIComponent(parentId)}/subtasks`);
     return response.tasks;
   }
 
@@ -147,20 +148,20 @@ export class TaskboiApiClient {
       assignedTo?: string;
     }
   ): Promise<Task> {
-    const response = await this.request<TaskResponse>("PATCH", `/tasks/${id}`, params);
+    const response = await this.request<TaskResponse>("PATCH", `/tasks/${encodeURIComponent(id)}`, params);
     return response.task;
   }
 
   async completeTask(id: string): Promise<CompleteTaskResponse> {
-    return await this.request<CompleteTaskResponse>("POST", `/tasks/${id}/complete`);
+    return await this.request<CompleteTaskResponse>("POST", `/tasks/${encodeURIComponent(id)}/complete`);
   }
 
   async uncompleteTask(id: string): Promise<Task> {
-    const response = await this.request<TaskResponse>("POST", `/tasks/${id}/uncomplete`);
+    const response = await this.request<TaskResponse>("POST", `/tasks/${encodeURIComponent(id)}/uncomplete`);
     return response.task;
   }
 
   async deleteTask(id: string): Promise<void> {
-    await this.request<SuccessResponse>("DELETE", `/tasks/${id}`);
+    await this.request<SuccessResponse>("DELETE", `/tasks/${encodeURIComponent(id)}`);
   }
 }
