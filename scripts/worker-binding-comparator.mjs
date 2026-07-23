@@ -52,5 +52,6 @@ export function assertRequiredOAuthBindings(bindings) {
   const byName = new Map(bindings.map((binding) => [binding?.name, binding]));
   if (byName.get("OAUTH_STORE")?.type !== "durable_object_namespace") throw new Error("Version lacks OAUTH_STORE Durable Object binding");
   if (byName.get("OAUTH_ISSUER")?.type !== "plain_text") throw new Error("Version lacks plaintext OAUTH_ISSUER");
+  if (byName.get("TASKBOI_API_BASE_URL")?.type !== "plain_text") throw new Error("Version lacks plaintext TASKBOI_API_BASE_URL");
   if (byName.get("OAUTH_ENCRYPTION_KEY")?.type !== "secret_text") throw new Error("Version lacks secret OAUTH_ENCRYPTION_KEY");
 }

@@ -83,7 +83,7 @@ export default {
 
       try {
         const body = await request.json() as McpRequest;
-        const client = new TaskboiApiClient(authorization.apiKey);
+        const client = new TaskboiApiClient(authorization.apiKey, env.TASKBOI_API_BASE_URL!);
         const response = await handleMcpRequest(body, client);
         return Response.json(response, { headers: corsHeaders });
       } catch {

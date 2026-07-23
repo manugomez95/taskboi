@@ -9,6 +9,7 @@ import { registerTaskTools } from "./tools/tasks.js";
 export async function createServer(): Promise<void> {
   // Get API key from environment
   const apiKey = process.env.TASKBOI_API_KEY;
+  const apiBaseUrl = process.env.TASKBOI_API_BASE_URL;
 
   if (!apiKey) {
     console.error("Error: TASKBOI_API_KEY environment variable is required");
@@ -23,8 +24,13 @@ export async function createServer(): Promise<void> {
     process.exit(1);
   }
 
+  if (!apiBaseUrl) {
+    console.error("Error: TASKBOI_API_BASE_URL environment variable is required");
+    process.exit(1);
+  }
+
   // Create API client
-  const client = new TaskboiApiClient(apiKey);
+  const client = new TaskboiApiClient(apiKey, apiBaseUrl);
 
   // Create MCP server
   const server = new McpServer({

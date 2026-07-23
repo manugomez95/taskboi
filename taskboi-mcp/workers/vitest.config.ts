@@ -7,6 +7,7 @@ export default defineWorkersConfig({
         wrangler: { configPath: "./wrangler.toml" },
         miniflare: {
           bindings: {
+            TASKBOI_API_BASE_URL: "https://api.example.invalid/functions/v1/mcp-api",
             OAUTH_CLIENTS: JSON.stringify([{
               client_id: "test-client",
               redirect_uris: ["https://client.example/callback"],
