@@ -2,10 +2,17 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
-import { apiRequestUrl, normalizeTaskboiApiBaseUrl } from "../dist/api-base-url.js";
+import { apiRequestUrl, normalizeTaskboiApiBaseUrl } from "taskboi-mcp/api-base-url";
 import { TaskboiApiClient } from "../dist/api-client.js";
 
 const baseUrl = "https://api.example.invalid/functions/v1/mcp-api";
+
+test("resolves the API base URL helpers through the built package subpath", () => {
+  assert.equal(
+    normalizeTaskboiApiBaseUrl("https://API.EXAMPLE.INVALID:443/functions/v1/mcp-api"),
+    baseUrl,
+  );
+});
 
 test("normalizes the mandatory API base URL", () => {
   assert.equal(normalizeTaskboiApiBaseUrl("https://API.EXAMPLE.INVALID:443/functions/v1/mcp-api"), baseUrl);

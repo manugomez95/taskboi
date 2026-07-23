@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "description": "MCP server for Taskboi - AI-powered task management",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./api-base-url": {
+      "types": "./dist/api-base-url.d.ts",
+      "import": "./dist/api-base-url.js"
+    }
+  },
   "bin": {
     "taskboi-mcp": "./bin/taskboi-mcp.js"
   },
