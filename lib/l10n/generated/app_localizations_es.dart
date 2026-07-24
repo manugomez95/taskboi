@@ -715,4 +715,64 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gallery => 'Galeria';
+
+  @override
+  String get welcomeCreateFreeAccount => 'Crear cuenta gratis';
+
+  @override
+  String get welcomeBetaBadge => 'Beta pública';
+
+  @override
+  String get welcomeHeadline =>
+      'Gestión de tareas que trabaja contigo, incluso sin conexión';
+
+  @override
+  String get welcomeSupportingCopy =>
+      'Organiza proyectos y tareas localmente y sincroniza tu trabajo cuando inicies sesión.';
+
+  @override
+  String get welcomeBetaCaveat =>
+      'Las funciones pueden cambiar durante la beta. Comparte tus comentarios mediante GitHub Issues.';
+
+  @override
+  String get welcomeFeaturesTitle =>
+      'Todo lo que necesitas para mantener el trabajo en marcha';
+
+  @override
+  String get welcomeOfflineTitle => 'Tareas sin conexión y sincronización';
+
+  @override
+  String get welcomeOfflineDescription =>
+      'Sigue organizando tareas sin conexión. Los cambios se sincronizan cuando inicias sesión y vuelves a estar en línea.';
+
+  @override
+  String get welcomePlanningTitle => 'Planificación flexible de tareas';
+
+  @override
+  String get welcomePlanningDescription =>
+      'Usa proyectos, subtareas, fechas límite, prioridades, recurrencia y ordenación mediante arrastrar y soltar.';
+
+  @override
+  String get welcomeBackupTitle => 'Herramientas de copia de seguridad JSON';
+
+  @override
+  String get welcomeBackupDescription =>
+      'Exporta e importa copias JSON. Confirma que una copia contiene lo que necesitas y prueba su restauración antes de depender de ella.';
+
+  @override
+  String get welcomeMcpTitle => 'Integración MCP opcional';
+
+  @override
+  String get welcomeMcpDescription =>
+      'Conecta asistentes de IA compatibles mediante la integración MCP opcional. La disponibilidad depende del cliente y del servicio que configures.';
+
+  @override
+  String get welcomeGitHub => 'GitHub';
+
+  @override
+  String get welcomeGitHubIssues => 'GitHub Issues';
+
+  @override
+  String get welcomeSourceNotice =>
+      'El código fuente de Taskboi tiene licencia Apache-2.0.';
 }

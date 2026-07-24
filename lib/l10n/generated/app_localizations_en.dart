@@ -711,4 +711,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gallery => 'Gallery';
+
+  @override
+  String get welcomeCreateFreeAccount => 'Create free account';
+
+  @override
+  String get welcomeBetaBadge => 'Public beta';
+
+  @override
+  String get welcomeHeadline =>
+      'Task management that works with you—even offline';
+
+  @override
+  String get welcomeSupportingCopy =>
+      'Organize projects and tasks locally, then synchronize your work when you sign in.';
+
+  @override
+  String get welcomeBetaCaveat =>
+      'Features can change during the beta. Share feedback through GitHub Issues.';
+
+  @override
+  String get welcomeFeaturesTitle => 'Everything you need to keep work moving';
+
+  @override
+  String get welcomeOfflineTitle => 'Offline-first tasks and sync';
+
+  @override
+  String get welcomeOfflineDescription =>
+      'Keep organizing tasks without a connection. Changes synchronize after you sign in and get back online.';
+
+  @override
+  String get welcomePlanningTitle => 'Flexible task planning';
+
+  @override
+  String get welcomePlanningDescription =>
+      'Use projects, subtasks, due dates, priorities, recurrence, and drag-and-drop ordering.';
+
+  @override
+  String get welcomeBackupTitle => 'JSON backup tools';
+
+  @override
+  String get welcomeBackupDescription =>
+      'Export and import JSON backups. Confirm that a backup contains what you need and test restoring it before relying on it.';
+
+  @override
+  String get welcomeMcpTitle => 'Optional MCP integration';
+
+  @override
+  String get welcomeMcpDescription =>
+      'Connect compatible AI assistants through the optional MCP integration. Availability depends on the client and service you configure.';
+
+  @override
+  String get welcomeGitHub => 'GitHub';
+
+  @override
+  String get welcomeGitHubIssues => 'GitHub Issues';
+
+  @override
+  String get welcomeSourceNotice =>
+      'Taskboi source is licensed under Apache-2.0.';
 }

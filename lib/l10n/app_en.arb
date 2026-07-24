@@ -426,5 +426,22 @@
     }
   },
   "camera": "Camera",
-  "gallery": "Gallery"
+  "gallery": "Gallery",
+  "welcomeCreateFreeAccount": "Create free account",
+  "welcomeBetaBadge": "Public beta",
+  "welcomeHeadline": "Task management that works with you—even offline",
+  "welcomeSupportingCopy": "Organize projects and tasks locally, then synchronize your work when you sign in.",
+  "welcomeBetaCaveat": "Features can change during the beta. Share feedback through GitHub Issues.",
+  "welcomeFeaturesTitle": "Everything you need to keep work moving",
+  "welcomeOfflineTitle": "Offline-first tasks and sync",
+  "welcomeOfflineDescription": "Keep organizing tasks without a connection. Changes synchronize after you sign in and get back online.",
+  "welcomePlanningTitle": "Flexible task planning",
+  "welcomePlanningDescription": "Use projects, subtasks, due dates, priorities, recurrence, and drag-and-drop ordering.",
+  "welcomeBackupTitle": "JSON backup tools",
+  "welcomeBackupDescription": "Export and import JSON backups. Confirm that a backup contains what you need and test restoring it before relying on it.",
+  "welcomeMcpTitle": "Optional MCP integration",
+  "welcomeMcpDescription": "Connect compatible AI assistants through the optional MCP integration. Availability depends on the client and service you configure.",
+  "welcomeGitHub": "GitHub",
+  "welcomeGitHubIssues": "GitHub Issues",
+  "welcomeSourceNotice": "Taskboi source is licensed under Apache-2.0."
 }

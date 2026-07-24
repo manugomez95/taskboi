@@ -1369,6 +1369,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gallery'**
   String get gallery;
+
+  /// No description provided for @welcomeCreateFreeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create free account'**
+  String get welcomeCreateFreeAccount;
+
+  /// No description provided for @welcomeBetaBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Public beta'**
+  String get welcomeBetaBadge;
+
+  /// No description provided for @welcomeHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Task management that works with you—even offline'**
+  String get welcomeHeadline;
+
+  /// No description provided for @welcomeSupportingCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize projects and tasks locally, then synchronize your work when you sign in.'**
+  String get welcomeSupportingCopy;
+
+  /// No description provided for @welcomeBetaCaveat.
+  ///
+  /// In en, this message translates to:
+  /// **'Features can change during the beta. Share feedback through GitHub Issues.'**
+  String get welcomeBetaCaveat;
+
+  /// No description provided for @welcomeFeaturesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you need to keep work moving'**
+  String get welcomeFeaturesTitle;
+
+  /// No description provided for @welcomeOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline-first tasks and sync'**
+  String get welcomeOfflineTitle;
+
+  /// No description provided for @welcomeOfflineDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep organizing tasks without a connection. Changes synchronize after you sign in and get back online.'**
+  String get welcomeOfflineDescription;
+
+  /// No description provided for @welcomePlanningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Flexible task planning'**
+  String get welcomePlanningTitle;
+
+  /// No description provided for @welcomePlanningDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use projects, subtasks, due dates, priorities, recurrence, and drag-and-drop ordering.'**
+  String get welcomePlanningDescription;
+
+  /// No description provided for @welcomeBackupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON backup tools'**
+  String get welcomeBackupTitle;
+
+  /// No description provided for @welcomeBackupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Export and import JSON backups. Confirm that a backup contains what you need and test restoring it before relying on it.'**
+  String get welcomeBackupDescription;
+
+  /// No description provided for @welcomeMcpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional MCP integration'**
+  String get welcomeMcpTitle;
+
+  /// No description provided for @welcomeMcpDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect compatible AI assistants through the optional MCP integration. Availability depends on the client and service you configure.'**
+  String get welcomeMcpDescription;
+
+  /// No description provided for @welcomeGitHub.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub'**
+  String get welcomeGitHub;
+
+  /// No description provided for @welcomeGitHubIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Issues'**
+  String get welcomeGitHubIssues;
+
+  /// No description provided for @welcomeSourceNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Taskboi source is licensed under Apache-2.0.'**
+  String get welcomeSourceNotice;
 }
 
 class _AppLocalizationsDelegate

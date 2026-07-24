@@ -6,6 +6,7 @@ import '../../features/auth/presentation/screens/loading_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/landing/presentation/screens/welcome_screen.dart';
 import '../../features/projects/presentation/screens/home_screen.dart';
 import '../../features/settings/presentation/screens/about_screen.dart';
 import '../../features/settings/presentation/screens/api_keys_screen.dart';
@@ -28,56 +29,21 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/loading',
     redirect: (context, state) {
-      final isLoading = authState.isLoading;
       final isStartupLoading = isLoggedIn &&
           (initialSyncState.isLoading || taskPreferencesState.isLoading);
-      final isAuthRoute = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
-      final isLoadingRoute = state.matchedLocation == '/loading';
-
-      // While auth state, startup sync, or task view preferences are loading,
-      // keep the app on the loading screen. This prevents the task UI from
-      // rendering cached/default ordering and then shifting after startup.
-      if ((isLoading || isStartupLoading) && !isLoadingRoute) {
-        return '/loading';
-      }
-
-      // Once auth and startup data resolve, redirect from loading to the
-      // appropriate destination.
-      if (!isLoading && !isStartupLoading && isLoadingRoute) {
-        return isLoggedIn ? '/today' : '/login';
-      }
-
-      // Handle widget deep links that GoRouter incorrectly tries to route.
-      // URIs like taskboi://open/abc123 get parsed as path /abc123.
-      // Redirect unknown paths (likely task IDs) to /today.
-      final knownPaths = [
-        '/',
-        '/login',
-        '/register',
-        '/today',
-        '/upcoming',
-        '/settings',
-        '/loading'
-      ];
-      final isKnownPath = knownPaths.contains(state.matchedLocation) ||
-          state.matchedLocation.startsWith('/project/') ||
-          state.matchedLocation.startsWith('/settings/');
-      if (!isKnownPath) {
-        return '/today';
-      }
-
-      if (!isLoggedIn && !isAuthRoute) {
-        return '/login';
-      }
-
-      if (isLoggedIn && isAuthRoute) {
-        return '/today';
-      }
-
-      return null;
+      return appRedirect(
+        location: state.matchedLocation,
+        isAuthLoading: authState.isLoading,
+        isStartupLoading: isStartupLoading,
+        isLoggedIn: isLoggedIn,
+      );
     },
     routes: [
+      GoRoute(
+        path: '/welcome',
+        name: 'welcome',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
       GoRoute(
         path: '/login',
         name: 'login',
@@ -172,5 +138,47 @@ final routerProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
+
+String? appRedirect({
+  required String location,
+  required bool isAuthLoading,
+  required bool isStartupLoading,
+  required bool isLoggedIn,
+}) {
+  final isPublicRoute =
+      location == '/welcome' || location == '/login' || location == '/register';
+  final isLoadingRoute = location == '/loading';
+
+  if ((isAuthLoading || isStartupLoading) && !isLoadingRoute) {
+    return '/loading';
+  }
+  if (!isAuthLoading && !isStartupLoading && isLoadingRoute) {
+    return isLoggedIn ? '/today' : '/welcome';
+  }
+
+  final knownPaths = [
+    '/',
+    '/welcome',
+    '/login',
+    '/register',
+    '/today',
+    '/upcoming',
+    '/settings',
+    '/loading',
+  ];
+  final isKnownPath = knownPaths.contains(location) ||
+      location.startsWith('/project/') ||
+      location.startsWith('/settings/');
+  if (!isKnownPath) {
+    return '/today';
+  }
+  if (!isLoggedIn && !isPublicRoute) {
+    return '/welcome';
+  }
+  if (isLoggedIn && isPublicRoute) {
+    return '/today';
+  }
+  return null;
+}
 
 enum TaskFilter { all, today, upcoming }
