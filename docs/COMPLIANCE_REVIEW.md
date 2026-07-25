@@ -1,10 +1,9 @@
-# Public Release Compliance Review
+# Public Release Approval
 
-This is a human review record, not a legal compatibility statement. Internal
-release-candidate builds do not require this approval. Any future workflow that
-publishes publicly must run `scripts/check-public-release-approval.py` against
-its completed review record with `--expected-revision` set to the exact release
-commit before publication.
+This canonical record is fail-closed. It does not approve publication. A human
+or legal reviewer must complete every field for the exact commit under review,
+and the public release gate must validate it with
+`scripts/check-public-release-approval.py --expected-revision <full-commit-sha>`.
 
 - Approval status: NOT APPROVED
 - Named human/legal reviewer: TBD
@@ -17,6 +16,5 @@ commit before publication.
 - Asset provenance attestations: UNDECIDED
 - Vulnerability disposition: UNDECIDED
 
-The reviewer must replace every placeholder with a concrete, revision-specific
-decision or attestation. Approval applies only to the listed source revision and
-distribution channels.
+Approval, if granted, applies only to the exact source revision and distribution
+channels recorded above.
