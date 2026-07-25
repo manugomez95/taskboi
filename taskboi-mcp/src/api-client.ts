@@ -120,6 +120,19 @@ export class TaskboiApiClient {
     return response.tasks;
   }
 
+  async getMyTasks(): Promise<Task[]> {
+    const response = await this.request<TasksResponse>("GET", "/tasks/mine");
+    return response.tasks;
+  }
+
+  async getTasksByAssignee(assignee: string): Promise<Task[]> {
+    const response = await this.request<TasksResponse>(
+      "GET",
+      `/tasks/by-assignee?assignee=${encodeURIComponent(assignee)}`,
+    );
+    return response.tasks;
+  }
+
   async createTask(params: {
     projectId: string;
     title: string;

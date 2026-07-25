@@ -3,6 +3,9 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "paths": {
+      "zod": ["./node_modules/zod"]
+    },
     "lib": ["ES2022"],
     "types": ["@cloudflare/workers-types"],
     "strict": true,
