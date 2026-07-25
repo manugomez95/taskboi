@@ -1,10 +1,28 @@
 // Taskboi MCP Server
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
 import { TaskboiApiClient } from "./api-client.js";
-import { registerProjectTools } from "./tools/projects.js";
-import { registerTaskTools } from "./tools/tasks.js";
+import {
+  dispatchTaskboiTool,
+  taskboiTools,
+  type TaskboiOperations,
+} from "./protocol.js";
+
+export function createTaskboiServer(operations: TaskboiOperations): Server {
+  const server = new Server(
+    { name: "Taskboi", version: "1.0.0" },
+    { capabilities: { tools: {} } },
+  );
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: taskboiTools }));
+  server.setRequestHandler(CallToolRequestSchema, async ({ params }) =>
+    dispatchTaskboiTool(params.name, params.arguments, operations));
+  return server;
+}
 
 export async function createServer(): Promise<void> {
   // Get API key from environment
@@ -32,15 +50,7 @@ export async function createServer(): Promise<void> {
   // Create API client
   const client = new TaskboiApiClient(apiKey, apiBaseUrl);
 
-  // Create MCP server
-  const server = new McpServer({
-    name: "Taskboi",
-    version: "1.0.0",
-  });
-
-  // Register tools
-  registerProjectTools(server, client);
-  registerTaskTools(server, client);
+  const server = createTaskboiServer(client);
 
   // Connect via stdio
   const transport = new StdioServerTransport();
