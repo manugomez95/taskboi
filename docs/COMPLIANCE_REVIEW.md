@@ -8,7 +8,7 @@ and the public release gate must validate it with
 - Approval status: APPROVED
 - Named human/legal reviewer: Manuel Gómez
 - Review date (YYYY-MM-DD): 2026-07-26
-- Source revision: 3cd84bd199db0ced91c806e181363c95968d82af
+- Source revision: fbb58f5036bb4b33c80a35f61ed803c68dd7b6f1
 - Scoped distribution channels: public GitHub repository, source-only; no packages, binaries, web artifacts, or application releases
 - Notices decision: Apache-2.0 license and applicable source attribution remain in the repository; no additional distribution artifacts are approved
 - License texts decision: The repository LICENSE is included; no additional bundled-license archive is approved because no artifacts are distributed
