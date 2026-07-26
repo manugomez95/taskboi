@@ -511,7 +511,6 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     String? recurrenceRule,
     String? recurrenceParentId,
     DateTime? recurrenceAnchorDate,
-    String? assignedTo,
   }) async {
     if (_userId == null) return null;
 
@@ -555,7 +554,6 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
         recurrenceRule: recurrenceRule,
         recurrenceParentId: recurrenceParentId,
         recurrenceAnchorDate: anchorDate,
-        assignedTo: assignedTo ?? 'manuel',
         createdAt: now,
         updatedAt: now,
       );
@@ -576,7 +574,6 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
         recurrenceRule: Value(recurrenceRule),
         recurrenceParentId: Value(recurrenceParentId),
         recurrenceAnchorDate: Value(anchorDate),
-        assignedTo: Value(assignedTo ?? 'manuel'),
         createdAt: Value(now),
         updatedAt: Value(now),
         isPendingSync: const Value(true),
@@ -616,7 +613,6 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     String? projectId,
     String? recurrenceRule,
     bool updateRecurrenceRule = false,
-    String? assignedTo,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -644,7 +640,6 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       if (recurrenceRule != null || updateRecurrenceRule) {
         updates['recurrence_rule'] = recurrenceRule;
       }
-      if (assignedTo != null) updates['assigned_to'] = assignedTo;
 
       // Update local DB
       await (_db.update(_db.tasks)..where((t) => t.id.equals(id))).write(
@@ -668,8 +663,6 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
           recurrenceRule: recurrenceRule != null || updateRecurrenceRule
               ? Value(recurrenceRule)
               : const Value.absent(),
-          assignedTo:
-              assignedTo != null ? Value(assignedTo) : const Value.absent(),
           updatedAt: Value(now),
           isPendingSync: const Value(true),
         ),

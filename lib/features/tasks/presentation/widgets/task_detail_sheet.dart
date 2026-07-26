@@ -229,77 +229,6 @@ class _TaskDetailSheetState extends ConsumerState<TaskDetailSheet> {
     });
   }
 
-  void _showAssigneePicker() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Assign to',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Text('👤', style: TextStyle(fontSize: 24)),
-              title: const Text('Manuel'),
-              subtitle: const Text('Default'),
-              trailing: _task.assignedTo == 'manuel'
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : null,
-              onTap: () => _setAssignee('manuel'),
-            ),
-            ListTile(
-              leading: const Text('🤖', style: TextStyle(fontSize: 24)),
-              title: const Text('Hermes'),
-              subtitle: const Text('AI assistant'),
-              trailing: _task.assignedTo == 'hermes'
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : null,
-              onTap: () => _setAssignee('hermes'),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _setAssignee(String assignee) async {
-    Navigator.of(context).pop();
-    await ref.read(tasksNotifierProvider.notifier).updateTask(
-          id: _task.id,
-          assignedTo: assignee,
-        );
-    setState(() {
-      _task = _task.copyWith(assignedTo: assignee);
-    });
-  }
-
-  String _getAssigneeDisplayLabel(String assignee) {
-    switch (assignee) {
-      case 'hermes':
-        return 'Hermes';
-      default:
-        return 'Manuel';
-    }
-  }
-
-  String _getAssigneeEmoji(String assignee) {
-    switch (assignee) {
-      case 'hermes':
-        return '🤖';
-      default:
-        return '👤';
-    }
-  }
-
   void _showMoreMenu() {
     final l10n = AppLocalizations.of(context)!;
     final projects = ref.read(projectsStreamProvider).valueOrNull ?? [];
@@ -768,22 +697,6 @@ class _TaskDetailSheetState extends ConsumerState<TaskDetailSheet> {
                             ? l10n.priorityN(_task.priority)
                             : l10n.addPriority,
                         onTap: _showPriorityPicker,
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Assignee row
-                      _DetailRow(
-                        icon: Icons.person_outline,
-                        iconColor: _task.assignedTo != 'manuel'
-                            ? theme.colorScheme.primary
-                            : Colors.grey,
-                        label: _getAssigneeDisplayLabel(_task.assignedTo),
-                        trailing: Text(
-                          _getAssigneeEmoji(_task.assignedTo),
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        onTap: _showAssigneePicker,
                       ),
 
                       const SizedBox(height: 16),

@@ -16,7 +16,7 @@ test("resolves the API base URL helpers through the built package subpath", () =
 });
 
 test("resolves the portable protocol through the built package subpath", () => {
-  assert.equal(taskboiTools.length, 18);
+  assert.equal(taskboiTools.length, 16);
 });
 
 test("portable protocol has no MCP SDK runtime dependency", async () => {
@@ -57,28 +57,6 @@ test("API client uses the injected base URL", async () => {
   try {
     await new TaskboiApiClient("tk_test", baseUrl).listProjects();
     assert.equal(requested, `${baseUrl}/projects`);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-});
-
-test("API client supports current-agent and explicit-assignee task queries", async () => {
-  const originalFetch = globalThis.fetch;
-  const requested = [];
-  globalThis.fetch = async (input) => {
-    requested.push(String(input));
-    return new Response(JSON.stringify({ tasks: [] }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  };
-  try {
-    const client = new TaskboiApiClient("tk_test", baseUrl);
-    await client.getMyTasks();
-    await client.getTasksByAssignee("hermes/qa");
-    assert.deepEqual(requested, [
-      `${baseUrl}/tasks/mine`,
-      `${baseUrl}/tasks/by-assignee?assignee=hermes%2Fqa`,
-    ]);
   } finally {
     globalThis.fetch = originalFetch;
   }

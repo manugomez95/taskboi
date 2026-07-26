@@ -8,7 +8,6 @@ export interface Project {
   icon: string | null;
   is_inbox: boolean;
   sort_order: number;
-  default_assignee: string;
   created_at: string;
   updated_at: string;
 }
@@ -29,7 +28,6 @@ export interface Task {
   recurrence_rule: string | null;
   recurrence_parent_id: string | null;
   recurrence_anchor_date: string | null;
-  assigned_to: string;
   created_at: string;
   updated_at: string;
 }

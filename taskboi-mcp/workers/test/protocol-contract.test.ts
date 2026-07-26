@@ -46,15 +46,23 @@ async function call(body: unknown): Promise<{ status: number; json: any }> {
 describe("actual Worker HTTP handler MCP contract", () => {
   it("exposes the complete shared tool list", async () => {
     const { json } = await call({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
-    expect(json.result.tools).toHaveLength(18);
+    expect(json.result.tools).toHaveLength(16);
     expect(json.result.tools.map(({ name }: { name: string }) => name)).toEqual([
       "list_projects", "get_inbox", "get_project", "create_project", "update_project",
       "delete_project", "list_tasks", "get_task", "get_today_tasks", "get_upcoming_tasks",
-      "get_subtasks", "get_my_tasks", "get_tasks_by_assignee", "create_task", "update_task",
+      "get_subtasks", "create_task", "update_task",
       "complete_task", "uncomplete_task", "delete_task",
     ]);
     expect(json.result.tools.find(({ name }: { name: string }) => name === "get_project")
       .inputSchema.properties.id.format).toBe("uuid");
+    expect(json.result.tools.some(({ name }: { name: string }) =>
+      name === "get_my_tasks" || name === "get_tasks_by_assignee")).toBe(false);
+    for (const name of ["create_project", "update_project", "create_task", "update_task"]) {
+      const tool = json.result.tools.find((candidate: { name: string }) =>
+        candidate.name === name);
+      expect(Object.keys(tool.inputSchema.properties)).not.toContain("defaultAssignee");
+      expect(Object.keys(tool.inputSchema.properties)).not.toContain("assignedTo");
+    }
   });
 
   it("maps validation, success, and application errors exactly like stdio", async () => {

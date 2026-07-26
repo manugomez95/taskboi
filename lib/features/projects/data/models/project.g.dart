@@ -15,8 +15,6 @@ _$ProjectImpl _$$ProjectImplFromJson(Map<String, dynamic> json) =>
       icon: json['icon'] as String? ?? 'folder',
       isInbox: json['is_inbox'] as bool? ?? false,
       sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
-      defaultAssignee: json['default_assignee'] as String? ?? 'manuel',
-      agentWebhookUrl: json['agent_webhook_url'] as String? ?? '',
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -34,8 +32,6 @@ Map<String, dynamic> _$$ProjectImplToJson(_$ProjectImpl instance) =>
       'icon': instance.icon,
       'is_inbox': instance.isInbox,
       'sort_order': instance.sortOrder,
-      'default_assignee': instance.defaultAssignee,
-      'agent_webhook_url': instance.agentWebhookUrl,
       'created_at': utcIso(instance.createdAt),
       'updated_at': utcIso(instance.updatedAt),
     };

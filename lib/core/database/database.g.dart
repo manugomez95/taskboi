@@ -53,22 +53,6 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
-  static const VerificationMeta _defaultAssigneeMeta =
-      const VerificationMeta('defaultAssignee');
-  @override
-  late final GeneratedColumn<String> defaultAssignee = GeneratedColumn<String>(
-      'default_assignee', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('manuel'));
-  static const VerificationMeta _agentWebhookUrlMeta =
-      const VerificationMeta('agentWebhookUrl');
-  @override
-  late final GeneratedColumn<String> agentWebhookUrl = GeneratedColumn<String>(
-      'agent_webhook_url', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(''));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -124,8 +108,6 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
         icon,
         isInbox,
         sortOrder,
-        defaultAssignee,
-        agentWebhookUrl,
         createdAt,
         updatedAt,
         nameEncrypted,
@@ -175,18 +157,6 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
     if (data.containsKey('sort_order')) {
       context.handle(_sortOrderMeta,
           sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
-    }
-    if (data.containsKey('default_assignee')) {
-      context.handle(
-          _defaultAssigneeMeta,
-          defaultAssignee.isAcceptableOrUnknown(
-              data['default_assignee']!, _defaultAssigneeMeta));
-    }
-    if (data.containsKey('agent_webhook_url')) {
-      context.handle(
-          _agentWebhookUrlMeta,
-          agentWebhookUrl.isAcceptableOrUnknown(
-              data['agent_webhook_url']!, _agentWebhookUrlMeta));
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
@@ -241,10 +211,6 @@ class $ProjectsTable extends Projects with TableInfo<$ProjectsTable, Project> {
           .read(DriftSqlType.bool, data['${effectivePrefix}is_inbox'])!,
       sortOrder: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
-      defaultAssignee: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}default_assignee'])!,
-      agentWebhookUrl: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}agent_webhook_url'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at']),
       updatedAt: attachedDatabase.typeMapping
@@ -274,8 +240,6 @@ class Project extends DataClass implements Insertable<Project> {
   final String? icon;
   final bool isInbox;
   final int sortOrder;
-  final String defaultAssignee;
-  final String agentWebhookUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String? nameEncrypted;
@@ -290,8 +254,6 @@ class Project extends DataClass implements Insertable<Project> {
       this.icon,
       required this.isInbox,
       required this.sortOrder,
-      required this.defaultAssignee,
-      required this.agentWebhookUrl,
       this.createdAt,
       this.updatedAt,
       this.nameEncrypted,
@@ -310,8 +272,6 @@ class Project extends DataClass implements Insertable<Project> {
     }
     map['is_inbox'] = Variable<bool>(isInbox);
     map['sort_order'] = Variable<int>(sortOrder);
-    map['default_assignee'] = Variable<String>(defaultAssignee);
-    map['agent_webhook_url'] = Variable<String>(agentWebhookUrl);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
@@ -336,8 +296,6 @@ class Project extends DataClass implements Insertable<Project> {
       icon: icon == null && nullToAbsent ? const Value.absent() : Value(icon),
       isInbox: Value(isInbox),
       sortOrder: Value(sortOrder),
-      defaultAssignee: Value(defaultAssignee),
-      agentWebhookUrl: Value(agentWebhookUrl),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
@@ -364,8 +322,6 @@ class Project extends DataClass implements Insertable<Project> {
       icon: serializer.fromJson<String?>(json['icon']),
       isInbox: serializer.fromJson<bool>(json['isInbox']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
-      defaultAssignee: serializer.fromJson<String>(json['defaultAssignee']),
-      agentWebhookUrl: serializer.fromJson<String>(json['agentWebhookUrl']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       nameEncrypted: serializer.fromJson<String?>(json['nameEncrypted']),
@@ -385,8 +341,6 @@ class Project extends DataClass implements Insertable<Project> {
       'icon': serializer.toJson<String?>(icon),
       'isInbox': serializer.toJson<bool>(isInbox),
       'sortOrder': serializer.toJson<int>(sortOrder),
-      'defaultAssignee': serializer.toJson<String>(defaultAssignee),
-      'agentWebhookUrl': serializer.toJson<String>(agentWebhookUrl),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'nameEncrypted': serializer.toJson<String?>(nameEncrypted),
@@ -404,8 +358,6 @@ class Project extends DataClass implements Insertable<Project> {
           Value<String?> icon = const Value.absent(),
           bool? isInbox,
           int? sortOrder,
-          String? defaultAssignee,
-          String? agentWebhookUrl,
           Value<DateTime?> createdAt = const Value.absent(),
           Value<DateTime?> updatedAt = const Value.absent(),
           Value<String?> nameEncrypted = const Value.absent(),
@@ -420,8 +372,6 @@ class Project extends DataClass implements Insertable<Project> {
         icon: icon.present ? icon.value : this.icon,
         isInbox: isInbox ?? this.isInbox,
         sortOrder: sortOrder ?? this.sortOrder,
-        defaultAssignee: defaultAssignee ?? this.defaultAssignee,
-        agentWebhookUrl: agentWebhookUrl ?? this.agentWebhookUrl,
         createdAt: createdAt.present ? createdAt.value : this.createdAt,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
         nameEncrypted:
@@ -439,12 +389,6 @@ class Project extends DataClass implements Insertable<Project> {
       icon: data.icon.present ? data.icon.value : this.icon,
       isInbox: data.isInbox.present ? data.isInbox.value : this.isInbox,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
-      defaultAssignee: data.defaultAssignee.present
-          ? data.defaultAssignee.value
-          : this.defaultAssignee,
-      agentWebhookUrl: data.agentWebhookUrl.present
-          ? data.agentWebhookUrl.value
-          : this.agentWebhookUrl,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       nameEncrypted: data.nameEncrypted.present
@@ -470,8 +414,6 @@ class Project extends DataClass implements Insertable<Project> {
           ..write('icon: $icon, ')
           ..write('isInbox: $isInbox, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('defaultAssignee: $defaultAssignee, ')
-          ..write('agentWebhookUrl: $agentWebhookUrl, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('nameEncrypted: $nameEncrypted, ')
@@ -491,8 +433,6 @@ class Project extends DataClass implements Insertable<Project> {
       icon,
       isInbox,
       sortOrder,
-      defaultAssignee,
-      agentWebhookUrl,
       createdAt,
       updatedAt,
       nameEncrypted,
@@ -510,8 +450,6 @@ class Project extends DataClass implements Insertable<Project> {
           other.icon == this.icon &&
           other.isInbox == this.isInbox &&
           other.sortOrder == this.sortOrder &&
-          other.defaultAssignee == this.defaultAssignee &&
-          other.agentWebhookUrl == this.agentWebhookUrl &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.nameEncrypted == this.nameEncrypted &&
@@ -528,8 +466,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   final Value<String?> icon;
   final Value<bool> isInbox;
   final Value<int> sortOrder;
-  final Value<String> defaultAssignee;
-  final Value<String> agentWebhookUrl;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<String?> nameEncrypted;
@@ -545,8 +481,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.icon = const Value.absent(),
     this.isInbox = const Value.absent(),
     this.sortOrder = const Value.absent(),
-    this.defaultAssignee = const Value.absent(),
-    this.agentWebhookUrl = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.nameEncrypted = const Value.absent(),
@@ -563,8 +497,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     this.icon = const Value.absent(),
     this.isInbox = const Value.absent(),
     this.sortOrder = const Value.absent(),
-    this.defaultAssignee = const Value.absent(),
-    this.agentWebhookUrl = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.nameEncrypted = const Value.absent(),
@@ -583,8 +515,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     Expression<String>? icon,
     Expression<bool>? isInbox,
     Expression<int>? sortOrder,
-    Expression<String>? defaultAssignee,
-    Expression<String>? agentWebhookUrl,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? nameEncrypted,
@@ -601,8 +531,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       if (icon != null) 'icon': icon,
       if (isInbox != null) 'is_inbox': isInbox,
       if (sortOrder != null) 'sort_order': sortOrder,
-      if (defaultAssignee != null) 'default_assignee': defaultAssignee,
-      if (agentWebhookUrl != null) 'agent_webhook_url': agentWebhookUrl,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (nameEncrypted != null) 'name_encrypted': nameEncrypted,
@@ -621,8 +549,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       Value<String?>? icon,
       Value<bool>? isInbox,
       Value<int>? sortOrder,
-      Value<String>? defaultAssignee,
-      Value<String>? agentWebhookUrl,
       Value<DateTime?>? createdAt,
       Value<DateTime?>? updatedAt,
       Value<String?>? nameEncrypted,
@@ -638,8 +564,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
       icon: icon ?? this.icon,
       isInbox: isInbox ?? this.isInbox,
       sortOrder: sortOrder ?? this.sortOrder,
-      defaultAssignee: defaultAssignee ?? this.defaultAssignee,
-      agentWebhookUrl: agentWebhookUrl ?? this.agentWebhookUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       nameEncrypted: nameEncrypted ?? this.nameEncrypted,
@@ -673,12 +597,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
     }
     if (sortOrder.present) {
       map['sort_order'] = Variable<int>(sortOrder.value);
-    }
-    if (defaultAssignee.present) {
-      map['default_assignee'] = Variable<String>(defaultAssignee.value);
-    }
-    if (agentWebhookUrl.present) {
-      map['agent_webhook_url'] = Variable<String>(agentWebhookUrl.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -714,8 +632,6 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
           ..write('icon: $icon, ')
           ..write('isInbox: $isInbox, ')
           ..write('sortOrder: $sortOrder, ')
-          ..write('defaultAssignee: $defaultAssignee, ')
-          ..write('agentWebhookUrl: $agentWebhookUrl, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('nameEncrypted: $nameEncrypted, ')
@@ -828,14 +744,6 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
   late final GeneratedColumn<DateTime> recurrenceAnchorDate =
       GeneratedColumn<DateTime>('recurrence_anchor_date', aliasedName, true,
           type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _assignedToMeta =
-      const VerificationMeta('assignedTo');
-  @override
-  late final GeneratedColumn<String> assignedTo = GeneratedColumn<String>(
-      'assigned_to', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      defaultValue: const Constant('manuel'));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -905,7 +813,6 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
         recurrenceRule,
         recurrenceParentId,
         recurrenceAnchorDate,
-        assignedTo,
         createdAt,
         updatedAt,
         titleEncrypted,
@@ -1003,12 +910,6 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
           recurrenceAnchorDate.isAcceptableOrUnknown(
               data['recurrence_anchor_date']!, _recurrenceAnchorDateMeta));
     }
-    if (data.containsKey('assigned_to')) {
-      context.handle(
-          _assignedToMeta,
-          assignedTo.isAcceptableOrUnknown(
-              data['assigned_to']!, _assignedToMeta));
-    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -1085,8 +986,6 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, Task> {
       recurrenceAnchorDate: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime,
           data['${effectivePrefix}recurrence_anchor_date']),
-      assignedTo: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}assigned_to'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at']),
       updatedAt: attachedDatabase.typeMapping
@@ -1126,7 +1025,6 @@ class Task extends DataClass implements Insertable<Task> {
   final String? recurrenceRule;
   final String? recurrenceParentId;
   final DateTime? recurrenceAnchorDate;
-  final String assignedTo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String? titleEncrypted;
@@ -1150,7 +1048,6 @@ class Task extends DataClass implements Insertable<Task> {
       this.recurrenceRule,
       this.recurrenceParentId,
       this.recurrenceAnchorDate,
-      required this.assignedTo,
       this.createdAt,
       this.updatedAt,
       this.titleEncrypted,
@@ -1192,7 +1089,6 @@ class Task extends DataClass implements Insertable<Task> {
     if (!nullToAbsent || recurrenceAnchorDate != null) {
       map['recurrence_anchor_date'] = Variable<DateTime>(recurrenceAnchorDate);
     }
-    map['assigned_to'] = Variable<String>(assignedTo);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
@@ -1244,7 +1140,6 @@ class Task extends DataClass implements Insertable<Task> {
       recurrenceAnchorDate: recurrenceAnchorDate == null && nullToAbsent
           ? const Value.absent()
           : Value(recurrenceAnchorDate),
-      assignedTo: Value(assignedTo),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
@@ -1284,7 +1179,6 @@ class Task extends DataClass implements Insertable<Task> {
           serializer.fromJson<String?>(json['recurrenceParentId']),
       recurrenceAnchorDate:
           serializer.fromJson<DateTime?>(json['recurrenceAnchorDate']),
-      assignedTo: serializer.fromJson<String>(json['assignedTo']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       titleEncrypted: serializer.fromJson<String?>(json['titleEncrypted']),
@@ -1315,7 +1209,6 @@ class Task extends DataClass implements Insertable<Task> {
       'recurrenceParentId': serializer.toJson<String?>(recurrenceParentId),
       'recurrenceAnchorDate':
           serializer.toJson<DateTime?>(recurrenceAnchorDate),
-      'assignedTo': serializer.toJson<String>(assignedTo),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'titleEncrypted': serializer.toJson<String?>(titleEncrypted),
@@ -1342,7 +1235,6 @@ class Task extends DataClass implements Insertable<Task> {
           Value<String?> recurrenceRule = const Value.absent(),
           Value<String?> recurrenceParentId = const Value.absent(),
           Value<DateTime?> recurrenceAnchorDate = const Value.absent(),
-          String? assignedTo,
           Value<DateTime?> createdAt = const Value.absent(),
           Value<DateTime?> updatedAt = const Value.absent(),
           Value<String?> titleEncrypted = const Value.absent(),
@@ -1371,7 +1263,6 @@ class Task extends DataClass implements Insertable<Task> {
         recurrenceAnchorDate: recurrenceAnchorDate.present
             ? recurrenceAnchorDate.value
             : this.recurrenceAnchorDate,
-        assignedTo: assignedTo ?? this.assignedTo,
         createdAt: createdAt.present ? createdAt.value : this.createdAt,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
         titleEncrypted:
@@ -1409,8 +1300,6 @@ class Task extends DataClass implements Insertable<Task> {
       recurrenceAnchorDate: data.recurrenceAnchorDate.present
           ? data.recurrenceAnchorDate.value
           : this.recurrenceAnchorDate,
-      assignedTo:
-          data.assignedTo.present ? data.assignedTo.value : this.assignedTo,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       titleEncrypted: data.titleEncrypted.present
@@ -1447,7 +1336,6 @@ class Task extends DataClass implements Insertable<Task> {
           ..write('recurrenceRule: $recurrenceRule, ')
           ..write('recurrenceParentId: $recurrenceParentId, ')
           ..write('recurrenceAnchorDate: $recurrenceAnchorDate, ')
-          ..write('assignedTo: $assignedTo, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('titleEncrypted: $titleEncrypted, ')
@@ -1476,7 +1364,6 @@ class Task extends DataClass implements Insertable<Task> {
         recurrenceRule,
         recurrenceParentId,
         recurrenceAnchorDate,
-        assignedTo,
         createdAt,
         updatedAt,
         titleEncrypted,
@@ -1504,7 +1391,6 @@ class Task extends DataClass implements Insertable<Task> {
           other.recurrenceRule == this.recurrenceRule &&
           other.recurrenceParentId == this.recurrenceParentId &&
           other.recurrenceAnchorDate == this.recurrenceAnchorDate &&
-          other.assignedTo == this.assignedTo &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.titleEncrypted == this.titleEncrypted &&
@@ -1530,7 +1416,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
   final Value<String?> recurrenceRule;
   final Value<String?> recurrenceParentId;
   final Value<DateTime?> recurrenceAnchorDate;
-  final Value<String> assignedTo;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<String?> titleEncrypted;
@@ -1555,7 +1440,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.recurrenceRule = const Value.absent(),
     this.recurrenceParentId = const Value.absent(),
     this.recurrenceAnchorDate = const Value.absent(),
-    this.assignedTo = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.titleEncrypted = const Value.absent(),
@@ -1581,7 +1465,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
     this.recurrenceRule = const Value.absent(),
     this.recurrenceParentId = const Value.absent(),
     this.recurrenceAnchorDate = const Value.absent(),
-    this.assignedTo = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.titleEncrypted = const Value.absent(),
@@ -1610,7 +1493,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
     Expression<String>? recurrenceRule,
     Expression<String>? recurrenceParentId,
     Expression<DateTime>? recurrenceAnchorDate,
-    Expression<String>? assignedTo,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? titleEncrypted,
@@ -1638,7 +1520,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
         'recurrence_parent_id': recurrenceParentId,
       if (recurrenceAnchorDate != null)
         'recurrence_anchor_date': recurrenceAnchorDate,
-      if (assignedTo != null) 'assigned_to': assignedTo,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (titleEncrypted != null) 'title_encrypted': titleEncrypted,
@@ -1667,7 +1548,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
       Value<String?>? recurrenceRule,
       Value<String?>? recurrenceParentId,
       Value<DateTime?>? recurrenceAnchorDate,
-      Value<String>? assignedTo,
       Value<DateTime?>? createdAt,
       Value<DateTime?>? updatedAt,
       Value<String?>? titleEncrypted,
@@ -1692,7 +1572,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
       recurrenceRule: recurrenceRule ?? this.recurrenceRule,
       recurrenceParentId: recurrenceParentId ?? this.recurrenceParentId,
       recurrenceAnchorDate: recurrenceAnchorDate ?? this.recurrenceAnchorDate,
-      assignedTo: assignedTo ?? this.assignedTo,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       titleEncrypted: titleEncrypted ?? this.titleEncrypted,
@@ -1753,9 +1632,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
       map['recurrence_anchor_date'] =
           Variable<DateTime>(recurrenceAnchorDate.value);
     }
-    if (assignedTo.present) {
-      map['assigned_to'] = Variable<String>(assignedTo.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1802,7 +1678,6 @@ class TasksCompanion extends UpdateCompanion<Task> {
           ..write('recurrenceRule: $recurrenceRule, ')
           ..write('recurrenceParentId: $recurrenceParentId, ')
           ..write('recurrenceAnchorDate: $recurrenceAnchorDate, ')
-          ..write('assignedTo: $assignedTo, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('titleEncrypted: $titleEncrypted, ')
@@ -3351,8 +3226,6 @@ typedef $$ProjectsTableCreateCompanionBuilder = ProjectsCompanion Function({
   Value<String?> icon,
   Value<bool> isInbox,
   Value<int> sortOrder,
-  Value<String> defaultAssignee,
-  Value<String> agentWebhookUrl,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
   Value<String?> nameEncrypted,
@@ -3369,8 +3242,6 @@ typedef $$ProjectsTableUpdateCompanionBuilder = ProjectsCompanion Function({
   Value<String?> icon,
   Value<bool> isInbox,
   Value<int> sortOrder,
-  Value<String> defaultAssignee,
-  Value<String> agentWebhookUrl,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
   Value<String?> nameEncrypted,
@@ -3409,14 +3280,6 @@ class $$ProjectsTableFilterComposer
 
   ColumnFilters<int> get sortOrder => $composableBuilder(
       column: $table.sortOrder, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get defaultAssignee => $composableBuilder(
-      column: $table.defaultAssignee,
-      builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get agentWebhookUrl => $composableBuilder(
-      column: $table.agentWebhookUrl,
-      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -3467,14 +3330,6 @@ class $$ProjectsTableOrderingComposer
 
   ColumnOrderings<int> get sortOrder => $composableBuilder(
       column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get defaultAssignee => $composableBuilder(
-      column: $table.defaultAssignee,
-      builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get agentWebhookUrl => $composableBuilder(
-      column: $table.agentWebhookUrl,
-      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
@@ -3528,12 +3383,6 @@ class $$ProjectsTableAnnotationComposer
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 
-  GeneratedColumn<String> get defaultAssignee => $composableBuilder(
-      column: $table.defaultAssignee, builder: (column) => column);
-
-  GeneratedColumn<String> get agentWebhookUrl => $composableBuilder(
-      column: $table.agentWebhookUrl, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -3583,8 +3432,6 @@ class $$ProjectsTableTableManager extends RootTableManager<
             Value<String?> icon = const Value.absent(),
             Value<bool> isInbox = const Value.absent(),
             Value<int> sortOrder = const Value.absent(),
-            Value<String> defaultAssignee = const Value.absent(),
-            Value<String> agentWebhookUrl = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
             Value<String?> nameEncrypted = const Value.absent(),
@@ -3601,8 +3448,6 @@ class $$ProjectsTableTableManager extends RootTableManager<
             icon: icon,
             isInbox: isInbox,
             sortOrder: sortOrder,
-            defaultAssignee: defaultAssignee,
-            agentWebhookUrl: agentWebhookUrl,
             createdAt: createdAt,
             updatedAt: updatedAt,
             nameEncrypted: nameEncrypted,
@@ -3619,8 +3464,6 @@ class $$ProjectsTableTableManager extends RootTableManager<
             Value<String?> icon = const Value.absent(),
             Value<bool> isInbox = const Value.absent(),
             Value<int> sortOrder = const Value.absent(),
-            Value<String> defaultAssignee = const Value.absent(),
-            Value<String> agentWebhookUrl = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
             Value<String?> nameEncrypted = const Value.absent(),
@@ -3637,8 +3480,6 @@ class $$ProjectsTableTableManager extends RootTableManager<
             icon: icon,
             isInbox: isInbox,
             sortOrder: sortOrder,
-            defaultAssignee: defaultAssignee,
-            agentWebhookUrl: agentWebhookUrl,
             createdAt: createdAt,
             updatedAt: updatedAt,
             nameEncrypted: nameEncrypted,
@@ -3682,7 +3523,6 @@ typedef $$TasksTableCreateCompanionBuilder = TasksCompanion Function({
   Value<String?> recurrenceRule,
   Value<String?> recurrenceParentId,
   Value<DateTime?> recurrenceAnchorDate,
-  Value<String> assignedTo,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
   Value<String?> titleEncrypted,
@@ -3708,7 +3548,6 @@ typedef $$TasksTableUpdateCompanionBuilder = TasksCompanion Function({
   Value<String?> recurrenceRule,
   Value<String?> recurrenceParentId,
   Value<DateTime?> recurrenceAnchorDate,
-  Value<String> assignedTo,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
   Value<String?> titleEncrypted,
@@ -3774,9 +3613,6 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
   ColumnFilters<DateTime> get recurrenceAnchorDate => $composableBuilder(
       column: $table.recurrenceAnchorDate,
       builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get assignedTo => $composableBuilder(
-      column: $table.assignedTo, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -3860,9 +3696,6 @@ class $$TasksTableOrderingComposer
       column: $table.recurrenceAnchorDate,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get assignedTo => $composableBuilder(
-      column: $table.assignedTo, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -3943,9 +3776,6 @@ class $$TasksTableAnnotationComposer
   GeneratedColumn<DateTime> get recurrenceAnchorDate => $composableBuilder(
       column: $table.recurrenceAnchorDate, builder: (column) => column);
 
-  GeneratedColumn<String> get assignedTo => $composableBuilder(
-      column: $table.assignedTo, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -4006,7 +3836,6 @@ class $$TasksTableTableManager extends RootTableManager<
             Value<String?> recurrenceRule = const Value.absent(),
             Value<String?> recurrenceParentId = const Value.absent(),
             Value<DateTime?> recurrenceAnchorDate = const Value.absent(),
-            Value<String> assignedTo = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
             Value<String?> titleEncrypted = const Value.absent(),
@@ -4032,7 +3861,6 @@ class $$TasksTableTableManager extends RootTableManager<
             recurrenceRule: recurrenceRule,
             recurrenceParentId: recurrenceParentId,
             recurrenceAnchorDate: recurrenceAnchorDate,
-            assignedTo: assignedTo,
             createdAt: createdAt,
             updatedAt: updatedAt,
             titleEncrypted: titleEncrypted,
@@ -4058,7 +3886,6 @@ class $$TasksTableTableManager extends RootTableManager<
             Value<String?> recurrenceRule = const Value.absent(),
             Value<String?> recurrenceParentId = const Value.absent(),
             Value<DateTime?> recurrenceAnchorDate = const Value.absent(),
-            Value<String> assignedTo = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
             Value<String?> titleEncrypted = const Value.absent(),
@@ -4084,7 +3911,6 @@ class $$TasksTableTableManager extends RootTableManager<
             recurrenceRule: recurrenceRule,
             recurrenceParentId: recurrenceParentId,
             recurrenceAnchorDate: recurrenceAnchorDate,
-            assignedTo: assignedTo,
             createdAt: createdAt,
             updatedAt: updatedAt,
             titleEncrypted: titleEncrypted,

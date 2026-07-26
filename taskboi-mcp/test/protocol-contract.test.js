@@ -60,14 +60,28 @@ test("configured stdio Server exposes the complete shared tool list", async (t) 
   const { client, server } = await configuredPair();
   t.after(() => Promise.all([client.close(), server.close()]));
   const result = await client.request({ method: "tools/list", params: {} }, ListToolsResultSchema);
-  assert.equal(result.tools.length, 18);
+  assert.equal(result.tools.length, 16);
   assert.deepEqual(result.tools.map(({ name }) => name), [
     "list_projects", "get_inbox", "get_project", "create_project", "update_project",
     "delete_project", "list_tasks", "get_task", "get_today_tasks", "get_upcoming_tasks",
-    "get_subtasks", "get_my_tasks", "get_tasks_by_assignee", "create_task", "update_task",
+    "get_subtasks", "create_task", "update_task",
     "complete_task", "uncomplete_task", "delete_task",
   ]);
   assert.equal(result.tools.find(({ name }) => name === "get_project").inputSchema.properties.id.format, "uuid");
+  assert.equal(
+    result.tools.some(({ name }) =>
+      name === "get_my_tasks" || name === "get_tasks_by_assignee"),
+    false,
+  );
+  for (const name of ["create_project", "update_project", "create_task", "update_task"]) {
+    const tool = result.tools.find((candidate) => candidate.name === name);
+    assert.ok(tool);
+    assert.equal(
+      Object.keys(tool.inputSchema.properties).some((property) =>
+        property === "defaultAssignee" || property === "assignedTo"),
+      false,
+    );
+  }
 });
 
 test("configured stdio Server maps validation, success, and application errors", async (t) => {

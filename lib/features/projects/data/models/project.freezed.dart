@@ -30,10 +30,6 @@ mixin _$Project {
   bool get isInbox => throw _privateConstructorUsedError;
   @JsonKey(name: 'sort_order')
   int get sortOrder => throw _privateConstructorUsedError;
-  @JsonKey(name: 'default_assignee')
-  String get defaultAssignee => throw _privateConstructorUsedError;
-  @JsonKey(name: 'agent_webhook_url')
-  String get agentWebhookUrl => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at', toJson: utcIso)
   DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at', toJson: utcIso)
@@ -61,8 +57,6 @@ abstract class $ProjectCopyWith<$Res> {
       String? icon,
       @JsonKey(name: 'is_inbox') bool isInbox,
       @JsonKey(name: 'sort_order') int sortOrder,
-      @JsonKey(name: 'default_assignee') String defaultAssignee,
-      @JsonKey(name: 'agent_webhook_url') String agentWebhookUrl,
       @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
 }
@@ -89,8 +83,6 @@ class _$ProjectCopyWithImpl<$Res, $Val extends Project>
     Object? icon = freezed,
     Object? isInbox = null,
     Object? sortOrder = null,
-    Object? defaultAssignee = null,
-    Object? agentWebhookUrl = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -123,14 +115,6 @@ class _$ProjectCopyWithImpl<$Res, $Val extends Project>
           ? _value.sortOrder
           : sortOrder // ignore: cast_nullable_to_non_nullable
               as int,
-      defaultAssignee: null == defaultAssignee
-          ? _value.defaultAssignee
-          : defaultAssignee // ignore: cast_nullable_to_non_nullable
-              as String,
-      agentWebhookUrl: null == agentWebhookUrl
-          ? _value.agentWebhookUrl
-          : agentWebhookUrl // ignore: cast_nullable_to_non_nullable
-              as String,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -158,8 +142,6 @@ abstract class _$$ProjectImplCopyWith<$Res> implements $ProjectCopyWith<$Res> {
       String? icon,
       @JsonKey(name: 'is_inbox') bool isInbox,
       @JsonKey(name: 'sort_order') int sortOrder,
-      @JsonKey(name: 'default_assignee') String defaultAssignee,
-      @JsonKey(name: 'agent_webhook_url') String agentWebhookUrl,
       @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
 }
@@ -184,8 +166,6 @@ class __$$ProjectImplCopyWithImpl<$Res>
     Object? icon = freezed,
     Object? isInbox = null,
     Object? sortOrder = null,
-    Object? defaultAssignee = null,
-    Object? agentWebhookUrl = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -218,14 +198,6 @@ class __$$ProjectImplCopyWithImpl<$Res>
           ? _value.sortOrder
           : sortOrder // ignore: cast_nullable_to_non_nullable
               as int,
-      defaultAssignee: null == defaultAssignee
-          ? _value.defaultAssignee
-          : defaultAssignee // ignore: cast_nullable_to_non_nullable
-              as String,
-      agentWebhookUrl: null == agentWebhookUrl
-          ? _value.agentWebhookUrl
-          : agentWebhookUrl // ignore: cast_nullable_to_non_nullable
-              as String,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -249,8 +221,6 @@ class _$ProjectImpl implements _Project {
       this.icon = 'folder',
       @JsonKey(name: 'is_inbox') this.isInbox = false,
       @JsonKey(name: 'sort_order') this.sortOrder = 0,
-      @JsonKey(name: 'default_assignee') this.defaultAssignee = 'manuel',
-      @JsonKey(name: 'agent_webhook_url') this.agentWebhookUrl = '',
       @JsonKey(name: 'created_at', toJson: utcIso) this.createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso) this.updatedAt});
 
@@ -277,12 +247,6 @@ class _$ProjectImpl implements _Project {
   @JsonKey(name: 'sort_order')
   final int sortOrder;
   @override
-  @JsonKey(name: 'default_assignee')
-  final String defaultAssignee;
-  @override
-  @JsonKey(name: 'agent_webhook_url')
-  final String agentWebhookUrl;
-  @override
   @JsonKey(name: 'created_at', toJson: utcIso)
   final DateTime? createdAt;
   @override
@@ -291,7 +255,7 @@ class _$ProjectImpl implements _Project {
 
   @override
   String toString() {
-    return 'Project(id: $id, userId: $userId, name: $name, color: $color, icon: $icon, isInbox: $isInbox, sortOrder: $sortOrder, defaultAssignee: $defaultAssignee, agentWebhookUrl: $agentWebhookUrl, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Project(id: $id, userId: $userId, name: $name, color: $color, icon: $icon, isInbox: $isInbox, sortOrder: $sortOrder, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -307,10 +271,6 @@ class _$ProjectImpl implements _Project {
             (identical(other.isInbox, isInbox) || other.isInbox == isInbox) &&
             (identical(other.sortOrder, sortOrder) ||
                 other.sortOrder == sortOrder) &&
-            (identical(other.defaultAssignee, defaultAssignee) ||
-                other.defaultAssignee == defaultAssignee) &&
-            (identical(other.agentWebhookUrl, agentWebhookUrl) ||
-                other.agentWebhookUrl == agentWebhookUrl) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -319,19 +279,8 @@ class _$ProjectImpl implements _Project {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      userId,
-      name,
-      color,
-      icon,
-      isInbox,
-      sortOrder,
-      defaultAssignee,
-      agentWebhookUrl,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, userId, name, color, icon,
+      isInbox, sortOrder, createdAt, updatedAt);
 
   /// Create a copy of Project
   /// with the given fields replaced by the non-null parameter values.
@@ -358,8 +307,6 @@ abstract class _Project implements Project {
       final String? icon,
       @JsonKey(name: 'is_inbox') final bool isInbox,
       @JsonKey(name: 'sort_order') final int sortOrder,
-      @JsonKey(name: 'default_assignee') final String defaultAssignee,
-      @JsonKey(name: 'agent_webhook_url') final String agentWebhookUrl,
       @JsonKey(name: 'created_at', toJson: utcIso) final DateTime? createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso)
       final DateTime? updatedAt}) = _$ProjectImpl;
@@ -383,12 +330,6 @@ abstract class _Project implements Project {
   @override
   @JsonKey(name: 'sort_order')
   int get sortOrder;
-  @override
-  @JsonKey(name: 'default_assignee')
-  String get defaultAssignee;
-  @override
-  @JsonKey(name: 'agent_webhook_url')
-  String get agentWebhookUrl;
   @override
   @JsonKey(name: 'created_at', toJson: utcIso)
   DateTime? get createdAt;

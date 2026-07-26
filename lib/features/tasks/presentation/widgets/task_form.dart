@@ -42,8 +42,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
   int _initialPriority = 0;
   String? _recurrenceRule;
   String? _initialRecurrenceRule;
-  String _assignedTo = 'manuel';
-  String _initialAssignedTo = 'manuel';
 
   @override
   void initState() {
@@ -55,7 +53,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
     _initialDueTime = widget.task?.dueTime;
     _initialPriority = widget.task?.priority ?? 0;
     _initialRecurrenceRule = widget.task?.recurrenceRule;
-    _initialAssignedTo = widget.task?.assignedTo ?? 'manuel';
 
     _titleController = TextEditingController(text: _initialTitle);
     _descriptionController = TextEditingController(text: _initialDescription);
@@ -64,7 +61,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
     _dueTime = _initialDueTime;
     _priority = _initialPriority;
     _recurrenceRule = _initialRecurrenceRule;
-    _assignedTo = _initialAssignedTo;
 
     _titleController.addListener(_onFieldChanged);
     _descriptionController.addListener(_onFieldChanged);
@@ -90,8 +86,7 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
         _dueDate != _initialDueDate ||
         _dueTime != _initialDueTime ||
         _priority != _initialPriority ||
-        _recurrenceRule != _initialRecurrenceRule ||
-        _assignedTo != _initialAssignedTo;
+        _recurrenceRule != _initialRecurrenceRule;
   }
 
   Future<bool> _confirmDiscard() async {
@@ -152,7 +147,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
         priority: _priority,
         recurrenceRule: _recurrenceRule,
         updateRecurrenceRule: true,
-        assignedTo: _assignedTo,
       );
     } else {
       await notifier.createTask(
@@ -166,7 +160,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
         priority: _priority,
         recurrenceRule: _recurrenceRule,
         parentId: widget.parentId,
-        assignedTo: _assignedTo,
       );
     }
 
@@ -314,79 +307,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
     );
   }
 
-  String _getAssigneeEmoji(String assignee) {
-    switch (assignee) {
-      case 'hermes':
-        return '\u{1F916}'; // 🤖
-      case 'claude':
-        return '\u{1F9E0}'; // 🧠
-      default:
-        return '\u{1F464}'; // 👤
-    }
-  }
-
-  void _showAssigneePicker() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Assign to',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Text('\u{1F464}', style: TextStyle(fontSize: 24)),
-              title: const Text('manuel'),
-              trailing: _assignedTo == 'manuel'
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _assignedTo = 'manuel';
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: const Text('\u{1F916}', style: TextStyle(fontSize: 24)),
-              title: const Text('hermes'),
-              trailing: _assignedTo == 'hermes'
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _assignedTo = 'hermes';
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: const Text('\u{1F9E0}', style: TextStyle(fontSize: 24)),
-              title: const Text('claude'),
-              trailing: _assignedTo == 'claude'
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _assignedTo = 'claude';
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectsStreamProvider);
@@ -506,16 +426,6 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
                       ),
                       onPressed: _showPriorityPicker,
                     ),
-                    ActionChip(
-                      avatar: Text(
-                        _getAssigneeEmoji(_assignedTo),
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      label: Text(_assignedTo == 'manuel'
-                          ? 'Asignado a: manuel'
-                          : _assignedTo),
-                      onPressed: _showAssigneePicker,
-                    ),
                   ],
                 ),
               ),
@@ -551,19 +461,8 @@ class _TaskFormSheetState extends ConsumerState<TaskFormSheet> {
                       }).toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          // Update assignee based on project's default_assignee
-                          final project =
-                              projects.where((p) => p.id == value).firstOrNull;
-                          final projectDefaultAssignee =
-                              project?.defaultAssignee;
                           setState(() {
                             _selectedProjectId = value;
-                            // Only auto-set assignee if user hasn't manually changed it
-                            // OR if this is a new task (not editing)
-                            if (widget.task == null &&
-                                projectDefaultAssignee != null) {
-                              _assignedTo = projectDefaultAssignee;
-                            }
                           });
                         }
                       },

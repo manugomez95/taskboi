@@ -23,6 +23,8 @@ after the first public release and resolution of all release blockers.
 
 ### Changed
 
+- Removed fixed agent assignment profiles, webhook dispatch, and assignee-only
+  task query surfaces from the portable OSS core.
 - Reworked the README for external setup, architecture, configuration security,
   MCP boundaries, and support.
 - Replaced the pending-license release blocker with the selected Apache-2.0
