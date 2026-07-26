@@ -11,6 +11,7 @@ Taskboi is an open-source, cross-platform task manager built with Flutter. Run i
 | You want to… | Start here |
 | --- | --- |
 | Try or contribute to the app locally | [Run locally](#run-locally) |
+| Get free multi-device sync without operating servers | [Use your own free Supabase project](#use-your-own-free-supabase-project) |
 | Operate your own synchronized instance | [Self-hosting](#self-hosting) |
 | Work without an account or server | Use the local database and JSON backup/import features; multi-device sync needs a backend |
 | Use a hosted, maintained service | [Taskboi Cloud](https://taskboi.netlify.app) |
@@ -23,6 +24,14 @@ Taskboi is an open-source, cross-platform task manager built with Flutter. Run i
 - JSON backup export and import
 - Light, dark, and system themes across Flutter-supported platforms
 - Optional Model Context Protocol (MCP) integrations
+
+## Use your own free Supabase project
+
+For many individuals, the easiest path to private, multi-device Taskboi sync is a **free project in their own [Supabase](https://supabase.com/pricing) account**. It provides the hosted database, authentication, realtime, and storage that Taskboi uses—without operating Docker, a server, or the Taskboi Cloud service.
+
+You remain the owner and administrator of that Supabase project: create it, apply Taskboi's migrations and functions using [the database runbook](supabase/README.md), then set its project URL and anonymous key in `public-config.local.json`. Your Taskboi clients can use that configuration across supported platforms.
+
+This is distinct from Taskboi Cloud: no Taskboi Cloud account is involved, and your data lives in the Supabase project you created. Supabase's free-plan limits and inactivity policy can change; review its current pricing and operational limits before relying on it for important data.
 
 ## Self-hosting
 
