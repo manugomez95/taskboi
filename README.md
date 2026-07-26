@@ -4,7 +4,7 @@ Taskboi is an open-source, cross-platform task manager built with Flutter. Run i
 
 [Apache-2.0 licensed](LICENSE) · [Report a bug or propose a focused change](https://github.com/manugomez95/taskboi/issues)
 
-> **Looking for a managed service instead?** [Taskboi Cloud](https://taskboi.netlify.app) is the separately operated hosted product. It is optional: cloning or self-hosting this repository does **not** create, depend on, or deploy to that site.
+> **Managed hosting:** Taskboi Cloud is planned and coming soon. This repository is the open-source project; cloning or self-hosting it does not create or depend on a managed account.
 
 ## Choose your path
 
@@ -14,7 +14,7 @@ Taskboi is an open-source, cross-platform task manager built with Flutter. Run i
 | Get free multi-device sync without operating servers | [Use your own free Supabase project](#use-your-own-free-supabase-project) |
 | Operate your own synchronized instance | [Self-hosting](#self-hosting) |
 | Work without an account or server | Use the local database and JSON backup/import features; multi-device sync needs a backend |
-| Use a hosted, maintained service | [Taskboi Cloud](https://taskboi.netlify.app) |
+| Wait for managed hosting | Taskboi Cloud — coming soon |
 
 ## What is included
 
@@ -27,11 +27,11 @@ Taskboi is an open-source, cross-platform task manager built with Flutter. Run i
 
 ## Use your own free Supabase project
 
-For many individuals, the easiest path to private, multi-device Taskboi sync is a **free project in their own [Supabase](https://supabase.com/pricing) account**. It provides the hosted database, authentication, realtime, and storage that Taskboi uses—without operating Docker, a server, or the Taskboi Cloud service.
+For many individuals, the easiest path to private, multi-device Taskboi sync is a **free project in their own [Supabase](https://supabase.com/pricing) account**. It provides the hosted database, authentication, realtime, and storage that Taskboi uses—without operating Docker, a server, or waiting for a managed Taskboi offering.
 
 You remain the owner and administrator of that Supabase project: create it, apply Taskboi's migrations and functions using [the database runbook](supabase/README.md), then set its project URL and anonymous key in `public-config.local.json`. Your Taskboi clients can use that configuration across supported platforms.
 
-This is distinct from Taskboi Cloud: no Taskboi Cloud account is involved, and your data lives in the Supabase project you created. Supabase's free-plan limits and inactivity policy can change; review its current pricing and operational limits before relying on it for important data.
+This is your own Supabase deployment, not a Taskboi-managed account; your data lives in the project you created. Supabase's free-plan limits and inactivity policy can change, so review its current pricing and operational limits before relying on it for important data.
 
 ## Self-hosting
 
@@ -90,14 +90,13 @@ For database operations, migrations, and production-oriented safeguards, read [t
 
 The app writes locally first, then synchronizes authenticated data with your Supabase instance. Row-level security and server-side validation are the authorization boundary; client-side checks are not a replacement for them.
 
-## Hosted service vs. this repository
+## Managed hosting
 
-The public repository is the open-source core. Taskboi Cloud, its landing page, Netlify deployment, accounts, operational configuration, and service commitments are separate from this project.
+Taskboi Cloud is planned and not available yet. Until it launches, use your own Supabase project for the easiest cloud-backed setup, or self-host the full stack.
 
-- You do not need a Taskboi Cloud account to run the source code.
-- Changing this repository does not deploy the hosted service.
+- You do not need a managed Taskboi account to run the source code.
 - Self-hosted operators own their infrastructure, security configuration, backups, and upgrades.
-- The hosted service may evolve independently of public releases.
+- A future managed offering will have its own terms and lifecycle, separate from public releases.
 
 ## MCP integrations
 
