@@ -1,163 +1,110 @@
 # Taskboi
 
-Taskboi is a cross-platform task manager built with Flutter and Supabase. It
-supports offline use, real-time synchronization, recurring tasks, backups, and
-optional Model Context Protocol (MCP) integrations.
+Taskboi is an open-source, cross-platform task manager built with Flutter. Run it locally, adapt it to your workflow, or deploy your own instance. It includes projects, tasks, recurring schedules, offline use, backups, and optional MCP integrations.
 
-Taskboi is licensed under the [Apache License 2.0](LICENSE). Release remains
-subject to the dependency, SBOM, and attribution review documented in the
-[release blockers](docs/RELEASE_BLOCKERS.md).
+[Apache-2.0 licensed](LICENSE) · [Report a bug or propose a focused change](https://github.com/manugomez95/taskboi/issues)
 
-## Features
+> **Looking for a managed service instead?** [Taskboi Cloud](https://taskboi.netlify.app) is the separately operated hosted product. It is optional: cloning or self-hosting this repository does **not** create, depend on, or deploy to that site.
 
-### Task management
+## Choose your path
 
-- Unlimited projects with color customization
-- Tasks with priorities, due dates, descriptions, recurring schedules, and subtasks
-- Per-view sorting and drag-and-drop reordering
+| You want to… | Start here |
+| --- | --- |
+| Try or contribute to the app locally | [Run locally](#run-locally) |
+| Operate your own synchronized instance | [Self-hosting](#self-hosting) |
+| Work without an account or server | Use the local database and JSON backup/import features; multi-device sync needs a backend |
+| Use a hosted, maintained service | [Taskboi Cloud](https://taskboi.netlify.app) |
 
-### Sync and appearance
+## What is included
 
-- Real-time sync across devices via Supabase
-- JSON backup export/import and offline support with automatic sync
-- Ten color themes, light/dark/system modes, and responsive layouts
+- Projects, tasks, subtasks, priorities, due dates, notes, sorting, and recurring schedules
+- Offline-first client storage with a local Drift database
+- Optional synchronization across devices
+- JSON backup export and import
+- Light, dark, and system themes across Flutter-supported platforms
+- Optional Model Context Protocol (MCP) integrations
 
-### Integrations and platforms
+## Self-hosting
 
-- MCP integration for AI-assisted task management
-- Web at [taskboi.netlify.app](https://taskboi.netlify.app), macOS, iOS, and Android
+Taskboi is open source, but the app is **not database-agnostic today**. A full self-hosted setup uses a self-managed [Supabase](https://supabase.com) stack: PostgreSQL, authentication, realtime, storage, row-level security, and the included migrations/functions. Supabase Cloud is not required.
 
-## Architecture
+This repository currently documents a developer-oriented self-hosting path. A one-command Docker Compose distribution is planned but is not available yet. Until then, use Docker plus the Supabase CLI to run the local stack.
 
-| Area | Location | Responsibility |
-| --- | --- | --- |
-| Flutter client | `lib/` | UI, local Drift database, authentication, and sync |
-| Supabase backend | `supabase/` | PostgreSQL schema/RLS, Edge Functions, storage, and realtime |
-| Local MCP server | `taskboi-mcp/` | stdio MCP client using a user-created Taskboi API key |
-| Remote MCP Worker | `taskboi-mcp/workers/` | OAuth-protected MCP service on Cloudflare Workers |
+### Requirements
 
-The client writes locally first and synchronizes authenticated user data with
-Supabase. Backend row-level security is the authorization boundary; client-side
-checks are not a substitute for it. The local MCP server holds the API key in
-the MCP client's process environment. The remote Worker exchanges a Taskboi API
-key for scoped, short-lived OAuth credentials and keeps upstream credentials in
-server-side storage.
+- Flutter SDK compatible with Dart `^3.6.2`
+- Docker and the Supabase CLI
+- Node.js 18+ and npm when working on MCP components
+- The platform toolchain for your chosen Flutter target
 
-## Prerequisites
+### Run locally
 
-- A current stable Flutter SDK satisfying Dart `^3.6.2` and the resolved packages
-- Node.js 18 or later and npm for MCP development
-- Docker and the Supabase CLI for local backend work
-- A platform toolchain supported by Flutter for the target device
-
-Cloudflare, Netlify, app-store, and production Supabase access are not required
-for normal development.
-
-## Quick start
-
-1. Clone the repository and install Flutter dependencies:
+1. Clone the repository and fetch Flutter packages:
 
    ```sh
+   git clone https://github.com/manugomez95/taskboi.git
+   cd taskboi
    flutter pub get
    ```
 
-2. Create the ignored local configuration file:
+2. Create your untracked public client configuration:
 
    ```sh
    cp config/public.example.json public-config.local.json
    ```
 
-3. Start a local Supabase stack, reset it to the committed migrations, and copy
-   its public API URL and anonymous key into `public-config.local.json` as the
-   exact `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` Dart defines:
+3. Start your local Supabase services and apply Taskboi's committed schema:
 
    ```sh
    supabase start
    supabase db reset
    ```
 
-4. Run the client:
+4. Copy the local Supabase API URL and anonymous key shown by the CLI into `public-config.local.json` as `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`, then run the client:
 
    ```sh
    flutter run --dart-define-from-file=public-config.local.json
    ```
 
-For test commands and changes involving migrations, MCP, or the Worker, read
-[CONTRIBUTING.md](CONTRIBUTING.md) first.
+`PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` are public client configuration, not secrets. Do not put a service-role key, direct database URL, signing key, OAuth secret, or provider token in this file.
 
-## Public configuration and secrets
+For database operations, migrations, and production-oriented safeguards, read [the Supabase runbook](supabase/README.md). For development and tests, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
-`PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` are public client
-configuration. They are embedded in released web/mobile clients and must never
-be treated as an authorization control. Security depends on Supabase
-authentication, RLS, storage policies, and server-side validation.
+## Architecture
 
-Never put service-role keys, direct database URLs, Taskboi API keys, OAuth
-encryption keys, signing credentials, or provider access tokens in Dart defines,
-MCP configuration committed to Git, `wrangler.toml`, issue reports, or logs.
-Keep `public-config.local.json` limited to the two public settings above.
+| Component | Purpose |
+| --- | --- |
+| Flutter client (`lib/`) | UI, local database, authentication, and sync |
+| Supabase (`supabase/`) | PostgreSQL schema, RLS, auth, realtime, storage, and functions |
+| Local MCP server (`taskboi-mcp/`) | Optional MCP integration for locally configured clients |
+| Remote MCP worker (`taskboi-mcp/workers/`) | Optional operator-managed OAuth MCP service |
 
-See [Public client configuration and secret handling](docs/configuration-and-secrets.md)
-for local, server, CI, release scanning, and credential exposure guidance.
+The app writes locally first, then synchronizes authenticated data with your Supabase instance. Row-level security and server-side validation are the authorization boundary; client-side checks are not a replacement for them.
+
+## Hosted service vs. this repository
+
+The public repository is the open-source core. Taskboi Cloud, its landing page, Netlify deployment, accounts, operational configuration, and service commitments are separate from this project.
+
+- You do not need a Taskboi Cloud account to run the source code.
+- Changing this repository does not deploy the hosted service.
+- Self-hosted operators own their infrastructure, security configuration, backups, and upgrades.
+- The hosted service may evolve independently of public releases.
 
 ## MCP integrations
 
-Taskboi supports the [Model Context Protocol](https://modelcontextprotocol.io/),
-allowing AI assistants to manage tasks. Generate an API key in Taskboi under
-**Settings > API Keys**, then follow the [local MCP server setup](taskboi-mcp/README.md)
-for clients that can launch a local command and inject `TASKBOI_API_KEY`
-privately. The [remote Worker](taskboi-mcp/workers/README.md) is an
-operator-managed OAuth service. Do not deploy either service or use real
-credentials while preparing a contribution.
+MCP is optional. The local server and remote OAuth worker are for operators who want AI clients to interact with their Taskboi data. See [the local MCP documentation](taskboi-mcp/README.md) and [the remote worker documentation](taskboi-mcp/workers/README.md) before deploying or connecting an MCP client.
 
-Once connected, an assistant can list projects and tasks, create, update,
-complete, or delete them, manage subtasks and recurring tasks, and show today or
-upcoming views. The complete tool reference and MCP development commands are in
-the [local MCP server documentation](taskboi-mcp/README.md).
-
-## Project documentation
+## Documentation
 
 - [Contributing](CONTRIBUTING.md)
+- [Database operations](supabase/README.md)
+- [Configuration and secret handling](docs/configuration-and-secrets.md)
 - [Security policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Changelog](CHANGELOG.md) and [release policy](docs/RELEASE_POLICY.md)
-- [Database operations](supabase/README.md)
-- [Third-party dependency review](docs/THIRD_PARTY_DEPENDENCIES.md)
 
-## Support
+## Support and limitations
 
-Use [GitHub Issues](https://github.com/manugomez95/taskboi/issues) for
-reproducible bugs and narrowly scoped feature proposals.
-Search existing issues first and remove private data, tokens, account details,
-and production identifiers from reports. Security vulnerabilities must follow
-the private process in [SECURITY.md](SECURITY.md), not a public issue.
+Use [GitHub Issues](https://github.com/manugomez95/taskboi/issues) for reproducible bugs and narrowly scoped proposals. Please remove credentials, private data, and production identifiers. Report security vulnerabilities through the private process in [SECURITY.md](SECURITY.md), not in a public issue.
 
-Maintainers provide support on a best-effort basis; no response time or release
-schedule is guaranteed. The repository does not currently document a community
-chat, support mailbox, or commercial support channel; Manuel must add those
-links here if they are created.
-
-> **Maintainer decision required:** choose a monitored support channel and
-> decide whether to publish acknowledgement or resolution targets. Until then,
-> GitHub Issues is the only documented support route and remains best-effort.
-
-## For external users
-
-The hosted web client is the simplest way to evaluate Taskboi. This repository
-also documents local development, but it does not currently promise a supported
-self-hosting distribution, hosted-service availability target, data-recovery
-service, or compatibility window. Review the [privacy policy](web/privacy-policy.html).
-Backup completeness has not been verified: only rely on the in-app JSON backup
-for important data if you have confirmed that it includes the data you need and
-have successfully tested restoring it with a compatible client.
-
-Public releases, when approved, will be announced through the
-[changelog](CHANGELOG.md) under the [release policy](docs/RELEASE_POLICY.md).
-Repository source and the hosted service may change independently; a merged
-commit is not a release.
-
-## License status
-
-Licensed under the [Apache License 2.0](LICENSE). The separate dependency,
-SBOM, and attribution review remains a release requirement; see
-[release blockers](docs/RELEASE_BLOCKERS.md).
+This is source code, not a managed backup or availability service. Test restore procedures before relying on backups for important data. Public releases and the hosted service have separate lifecycles.
