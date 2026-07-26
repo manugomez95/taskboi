@@ -46,8 +46,6 @@ mixin _$Task {
   String? get recurrenceParentId => throw _privateConstructorUsedError;
   @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
   DateTime? get recurrenceAnchorDate => throw _privateConstructorUsedError;
-  @JsonKey(name: 'assigned_to')
-  String get assignedTo => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at', toJson: utcIso)
   DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at', toJson: utcIso)
@@ -84,7 +82,6 @@ abstract class $TaskCopyWith<$Res> {
       @JsonKey(name: 'recurrence_parent_id') String? recurrenceParentId,
       @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
       DateTime? recurrenceAnchorDate,
-      @JsonKey(name: 'assigned_to') String assignedTo,
       @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
 }
@@ -119,7 +116,6 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? recurrenceRule = freezed,
     Object? recurrenceParentId = freezed,
     Object? recurrenceAnchorDate = freezed,
-    Object? assignedTo = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -184,10 +180,6 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
           ? _value.recurrenceAnchorDate
           : recurrenceAnchorDate // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      assignedTo: null == assignedTo
-          ? _value.assignedTo
-          : assignedTo // ignore: cast_nullable_to_non_nullable
-              as String,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -224,7 +216,6 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
       @JsonKey(name: 'recurrence_parent_id') String? recurrenceParentId,
       @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
       DateTime? recurrenceAnchorDate,
-      @JsonKey(name: 'assigned_to') String assignedTo,
       @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
 }
@@ -256,7 +247,6 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? recurrenceRule = freezed,
     Object? recurrenceParentId = freezed,
     Object? recurrenceAnchorDate = freezed,
-    Object? assignedTo = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
   }) {
@@ -321,10 +311,6 @@ class __$$TaskImplCopyWithImpl<$Res>
           ? _value.recurrenceAnchorDate
           : recurrenceAnchorDate // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      assignedTo: null == assignedTo
-          ? _value.assignedTo
-          : assignedTo // ignore: cast_nullable_to_non_nullable
-              as String,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -357,7 +343,6 @@ class _$TaskImpl extends _Task {
       @JsonKey(name: 'recurrence_parent_id') this.recurrenceParentId,
       @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
       this.recurrenceAnchorDate,
-      @JsonKey(name: 'assigned_to') this.assignedTo = 'manuel',
       @JsonKey(name: 'created_at', toJson: utcIso) this.createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso) this.updatedAt})
       : super._();
@@ -408,9 +393,6 @@ class _$TaskImpl extends _Task {
   @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
   final DateTime? recurrenceAnchorDate;
   @override
-  @JsonKey(name: 'assigned_to')
-  final String assignedTo;
-  @override
   @JsonKey(name: 'created_at', toJson: utcIso)
   final DateTime? createdAt;
   @override
@@ -419,7 +401,7 @@ class _$TaskImpl extends _Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, projectId: $projectId, userId: $userId, parentId: $parentId, title: $title, description: $description, dueDate: $dueDate, dueTime: $dueTime, priority: $priority, isCompleted: $isCompleted, completedAt: $completedAt, sortOrder: $sortOrder, recurrenceRule: $recurrenceRule, recurrenceParentId: $recurrenceParentId, recurrenceAnchorDate: $recurrenceAnchorDate, assignedTo: $assignedTo, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, projectId: $projectId, userId: $userId, parentId: $parentId, title: $title, description: $description, dueDate: $dueDate, dueTime: $dueTime, priority: $priority, isCompleted: $isCompleted, completedAt: $completedAt, sortOrder: $sortOrder, recurrenceRule: $recurrenceRule, recurrenceParentId: $recurrenceParentId, recurrenceAnchorDate: $recurrenceAnchorDate, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -452,8 +434,6 @@ class _$TaskImpl extends _Task {
                 other.recurrenceParentId == recurrenceParentId) &&
             (identical(other.recurrenceAnchorDate, recurrenceAnchorDate) ||
                 other.recurrenceAnchorDate == recurrenceAnchorDate) &&
-            (identical(other.assignedTo, assignedTo) ||
-                other.assignedTo == assignedTo) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -479,7 +459,6 @@ class _$TaskImpl extends _Task {
       recurrenceRule,
       recurrenceParentId,
       recurrenceAnchorDate,
-      assignedTo,
       createdAt,
       updatedAt);
 
@@ -518,7 +497,6 @@ abstract class _Task extends Task {
       @JsonKey(name: 'recurrence_parent_id') final String? recurrenceParentId,
       @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
       final DateTime? recurrenceAnchorDate,
-      @JsonKey(name: 'assigned_to') final String assignedTo,
       @JsonKey(name: 'created_at', toJson: utcIso) final DateTime? createdAt,
       @JsonKey(name: 'updated_at', toJson: utcIso)
       final DateTime? updatedAt}) = _$TaskImpl;
@@ -567,9 +545,6 @@ abstract class _Task extends Task {
   @override
   @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
   DateTime? get recurrenceAnchorDate;
-  @override
-  @JsonKey(name: 'assigned_to')
-  String get assignedTo;
   @override
   @JsonKey(name: 'created_at', toJson: utcIso)
   DateTime? get createdAt;

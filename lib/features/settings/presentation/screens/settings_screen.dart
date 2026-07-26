@@ -17,7 +17,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../backup/providers/backup_provider.dart';
-import '../../data/repositories/user_preferences_repository.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/theme_provider.dart';
 
@@ -50,12 +49,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: l10n.apiKeysSubtitle,
                 onTap: () => context.go('/settings/api-keys'),
               ),
-            ],
-          ),
-          _SettingsSection(
-            title: 'Agent Webhooks',
-            children: [
-              _AgentWebhookTile(),
             ],
           ),
           _SettingsSection(
@@ -504,169 +497,6 @@ class _ThemeModeTile extends StatelessWidget {
           visualDensity: VisualDensity.compact,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-      ),
-    );
-  }
-}
-
-class _AgentWebhookTile extends StatefulWidget {
-  @override
-  State<_AgentWebhookTile> createState() => _AgentWebhookTileState();
-}
-
-class _AgentWebhookTileState extends State<_AgentWebhookTile> {
-  final _repo = UserPreferencesRepository();
-  final _controller = TextEditingController();
-  bool _isLoading = true;
-  bool _isEditing = false;
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadWebhookUrl();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadWebhookUrl() async {
-    final url = await _repo.getAgentWebhookUrl();
-    if (mounted) {
-      _controller.text = url;
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _saveWebhookUrl() async {
-    setState(() => _isSaving = true);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    try {
-      await _repo.setAgentWebhookUrl(_controller.text.trim());
-      if (mounted) {
-        setState(() {
-          _isEditing = false;
-          _isSaving = false;
-        });
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Webhook URL saved'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isSaving = false);
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text('Failed to save: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    if (_isLoading) {
-      return const ListTile(
-        leading: Icon(Icons.webhook),
-        title: Text('Agent Webhook URL'),
-        subtitle: Text('Loading...'),
-      );
-    }
-
-    if (!_isEditing) {
-      final url = _controller.text;
-      return ListTile(
-        leading: const Icon(Icons.webhook),
-        title: const Text('Agent Webhook URL'),
-        subtitle: Text(
-          url.isEmpty ? 'Not configured — tap to set' : url,
-          style: TextStyle(
-            color: url.isEmpty ? theme.colorScheme.outline : null,
-          ),
-        ),
-        trailing: Icon(Icons.chevron_right, color: theme.colorScheme.outline),
-        onTap: () {
-          setState(() => _isEditing = true);
-        },
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.webhook, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Agent Webhook URL',
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              hintText: 'https://example.com/webhook',
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              suffixIcon: _isSaving
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : null,
-            ),
-            keyboardType: TextInputType.url,
-            onSubmitted: (_) => _saveWebhookUrl(),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Global URL for receiving agent task notifications. Can be overridden per project.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.outline,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: _isSaving
-                    ? null
-                    : () {
-                        setState(() => _isEditing = false);
-                      },
-                child: const Text('Cancel'),
-              ),
-              const SizedBox(width: 8),
-              FilledButton(
-                onPressed: _isSaving ? null : _saveWebhookUrl,
-                child: const Text('Save'),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

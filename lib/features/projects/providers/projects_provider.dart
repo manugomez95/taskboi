@@ -68,7 +68,6 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
     required String name,
     String color = '#6B7280',
     String? icon,
-    String defaultAssignee = 'manuel',
   }) async {
     if (_userId == null) return null;
 
@@ -94,7 +93,6 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
         icon: icon ?? 'folder',
         isInbox: false,
         sortOrder: maxSortOrder + 1,
-        defaultAssignee: defaultAssignee,
         createdAt: now,
         updatedAt: now,
       );
@@ -108,7 +106,6 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
         icon: Value(icon ?? 'folder'),
         isInbox: const Value(false),
         sortOrder: Value(maxSortOrder + 1),
-        defaultAssignee: Value(defaultAssignee),
         createdAt: Value(now),
         updatedAt: Value(now),
         isPendingSync: const Value(true),
@@ -139,8 +136,6 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
     String? color,
     String? icon,
     int? sortOrder,
-    String? defaultAssignee,
-    String? agentWebhookUrl,
   }) async {
     state = const AsyncValue.loading();
     try {
@@ -155,12 +150,6 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
       if (color != null) updates['color'] = color;
       if (icon != null) updates['icon'] = icon;
       if (sortOrder != null) updates['sort_order'] = sortOrder;
-      if (defaultAssignee != null) {
-        updates['default_assignee'] = defaultAssignee;
-      }
-      if (agentWebhookUrl != null) {
-        updates['agent_webhook_url'] = agentWebhookUrl;
-      }
 
       // Update local DB
       await (_db.update(_db.projects)..where((p) => p.id.equals(id))).write(
@@ -170,12 +159,6 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
           icon: icon != null ? Value(icon) : const Value.absent(),
           sortOrder:
               sortOrder != null ? Value(sortOrder) : const Value.absent(),
-          defaultAssignee: defaultAssignee != null
-              ? Value(defaultAssignee)
-              : const Value.absent(),
-          agentWebhookUrl: agentWebhookUrl != null
-              ? Value(agentWebhookUrl)
-              : const Value.absent(),
           updatedAt: Value(now),
           isPendingSync: const Value(true),
         ),

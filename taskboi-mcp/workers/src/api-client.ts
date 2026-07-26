@@ -11,7 +11,6 @@ interface Project {
   icon: string | null;
   is_inbox: boolean;
   sort_order: number;
-  default_assignee: string;
   created_at: string;
   updated_at: string;
 }
@@ -32,7 +31,6 @@ interface Task {
   recurrence_rule: string | null;
   recurrence_parent_id: string | null;
   recurrence_anchor_date: string | null;
-  assigned_to: string;
   created_at: string;
   updated_at: string;
 }
@@ -99,7 +97,6 @@ export class TaskboiApiClient {
     name: string;
     color?: string;
     icon?: string;
-    defaultAssignee?: string;
   }): Promise<Project> {
     const response = await this.request<ProjectResponse>("POST", "/projects", params);
     return response.project;
@@ -111,7 +108,6 @@ export class TaskboiApiClient {
       name?: string;
       color?: string;
       icon?: string;
-      defaultAssignee?: string;
     }
   ): Promise<Project> {
     const response = await this.request<ProjectResponse>("PATCH", `/projects/${encodeURIComponent(id)}`, params);
@@ -152,16 +148,6 @@ export class TaskboiApiClient {
     return response.tasks;
   }
 
-  async getMyTasks(): Promise<Task[]> {
-    const response = await this.request<TasksResponse>("GET", "/tasks/mine");
-    return response.tasks;
-  }
-
-  async getTasksByAssignee(assignee: string): Promise<Task[]> {
-    const response = await this.request<TasksResponse>("GET", `/tasks/by-assignee?assignee=${encodeURIComponent(assignee)}`);
-    return response.tasks;
-  }
-
   async createTask(params: {
     projectId: string;
     title: string;
@@ -171,7 +157,6 @@ export class TaskboiApiClient {
     priority?: number;
     parentId?: string;
     recurrenceRule?: string;
-    assignedTo?: string;
   }): Promise<Task> {
     const response = await this.request<TaskResponse>("POST", "/tasks", params);
     return response.task;
@@ -187,7 +172,6 @@ export class TaskboiApiClient {
       priority?: number;
       projectId?: string;
       recurrenceRule?: string;
-      assignedTo?: string;
     }
   ): Promise<Task> {
     const response = await this.request<TaskResponse>("PATCH", `/tasks/${encodeURIComponent(id)}`, params);

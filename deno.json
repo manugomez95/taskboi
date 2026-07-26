@@ -9,16 +9,13 @@
   },
   "lint": {
     "include": ["supabase/functions"],
-    "exclude": [
-      "supabase/functions/comment-images/security_test.ts",
-      "supabase/functions/notify-assignee/notify_assignee_test.ts"
-    ],
+    "exclude": ["supabase/functions/comment-images/security_test.ts"],
     "rules": {
       "exclude": ["no-import-prefix"]
     }
   },
   "tasks": {
-    "check": "deno fmt --check && deno lint && deno check supabase/functions/comment-images/index.ts supabase/functions/mcp-api/index.ts supabase/functions/notify-assignee/index.ts",
-    "test": "deno test --allow-env supabase/functions/comment-images/security_test.ts supabase/functions/notify-assignee/notify_assignee_test.ts"
+    "check": "deno fmt --check && deno lint && deno check supabase/functions/comment-images/index.ts supabase/functions/mcp-api/index.ts",
+    "test": "deno test --allow-env supabase/functions/comment-images/security_test.ts"
   }
 }

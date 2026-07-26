@@ -17,9 +17,7 @@ class ProjectFormDialog extends ConsumerStatefulWidget {
 class _ProjectFormDialogState extends ConsumerState<ProjectFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _webhookController;
   late String _selectedColor;
-  late String _selectedDefaultAssignee;
 
   static const List<String> _colors = [
     '#6B7280', // Gray
@@ -36,16 +34,12 @@ class _ProjectFormDialogState extends ConsumerState<ProjectFormDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.project?.name ?? '');
-    _webhookController =
-        TextEditingController(text: widget.project?.agentWebhookUrl ?? '');
     _selectedColor = widget.project?.color ?? _colors[0];
-    _selectedDefaultAssignee = widget.project?.defaultAssignee ?? 'manuel';
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _webhookController.dispose();
     super.dispose();
   }
 
@@ -55,56 +49,6 @@ class _ProjectFormDialogState extends ConsumerState<ProjectFormDialog> {
     } catch (_) {
       return Colors.grey;
     }
-  }
-
-  Widget _buildAssigneeSelector() {
-    return Row(
-      children: [
-        _assigneeOption('manuel', '👤', 'manuel'),
-        const SizedBox(width: 8),
-        _assigneeOption('hermes', '🤖', 'hermes'),
-      ],
-    );
-  }
-
-  Widget _assigneeOption(String value, String emoji, String label) {
-    final isSelected = _selectedDefaultAssignee == value;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedDefaultAssignee = value;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primaryContainer
-              : Colors.grey.withAlpha(25),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey.withAlpha(50),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 18)),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color:
-                    isSelected ? Theme.of(context).colorScheme.primary : null,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _handleSubmit() async {
@@ -117,14 +61,11 @@ class _ProjectFormDialogState extends ConsumerState<ProjectFormDialog> {
         id: widget.project!.id,
         name: _nameController.text.trim(),
         color: _selectedColor,
-        defaultAssignee: _selectedDefaultAssignee,
-        agentWebhookUrl: _webhookController.text.trim(),
       );
     } else {
       await notifier.createProject(
         name: _nameController.text.trim(),
         color: _selectedColor,
-        defaultAssignee: _selectedDefaultAssignee,
       );
     }
 
@@ -206,34 +147,6 @@ class _ProjectFormDialogState extends ConsumerState<ProjectFormDialog> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Default assignee',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            _buildAssigneeSelector(),
-            if (isEditing) ...[
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _webhookController,
-                decoration: InputDecoration(
-                  labelText: 'Agent Webhook URL (optional)',
-                  hintText: 'https://example.com/webhook',
-                  prefixIcon: const Icon(Icons.webhook, size: 20),
-                ),
-                keyboardType: TextInputType.url,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Overrides the global webhook URL for this project',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    ),
-              ),
-            ],
           ],
         ),
       ),

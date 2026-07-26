@@ -759,7 +759,6 @@ class SyncService {
       recurrenceAnchorDate: Value(remoteData['recurrence_anchor_date'] != null
           ? DateTime.parse(remoteData['recurrence_anchor_date'] as String)
           : null),
-      assignedTo: Value(remoteData['assigned_to'] as String? ?? 'manuel'),
       createdAt: Value(remoteData['created_at'] != null
           ? DateTime.parse(remoteData['created_at'] as String)
           : null),

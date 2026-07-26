@@ -138,14 +138,6 @@ class _TaskTileState extends ConsumerState<TaskTile>
         );
   }
 
-  Future<void> _setAssignee(String assignee) async {
-    final task = widget.task;
-    await ref.read(tasksNotifierProvider.notifier).updateTask(
-          id: task.id,
-          assignedTo: assignee,
-        );
-  }
-
   Future<void> _rescheduleTask(DateTime? dueDate) async {
     await ref.read(tasksNotifierProvider.notifier).rescheduleTask(
           widget.task.id,
@@ -351,25 +343,6 @@ class _TaskTileState extends ConsumerState<TaskTile>
         ],
         child: Text(l10n.setPriority),
       ),
-      // Assign to submenu
-      SubmenuButton(
-        leadingIcon: const Icon(Icons.person_outline, size: 20),
-        menuChildren: [
-          _buildAssigneeMenuItem(
-            emoji: '👤',
-            label: 'Manuel',
-            assignee: 'manuel',
-            currentAssignee: task.assignedTo,
-          ),
-          _buildAssigneeMenuItem(
-            emoji: '🤖',
-            label: 'Hermes',
-            assignee: 'hermes',
-            currentAssignee: task.assignedTo,
-          ),
-        ],
-        child: Text('Assign to...'),
-      ),
       // Add Subtask
       MenuItemButton(
         leadingIcon: const Icon(Icons.add_task, size: 20),
@@ -441,31 +414,6 @@ class _TaskTileState extends ConsumerState<TaskTile>
           : () {
               _menuController.close();
               _setPriority(priority);
-            },
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : null,
-        ),
-      ),
-    );
-  }
-
-  MenuItemButton _buildAssigneeMenuItem({
-    required String emoji,
-    required String label,
-    required String assignee,
-    required String currentAssignee,
-  }) {
-    final isSelected = assignee == currentAssignee;
-    return MenuItemButton(
-      leadingIcon: Text(emoji, style: const TextStyle(fontSize: 18)),
-      trailingIcon: isSelected ? const Icon(Icons.check, size: 18) : null,
-      onPressed: isSelected
-          ? null
-          : () {
-              _menuController.close();
-              _setAssignee(assignee);
             },
       child: Text(
         label,
@@ -674,29 +622,6 @@ class _TaskTileState extends ConsumerState<TaskTile>
         Icons.repeat,
         size: 12,
         color: Colors.grey.shade600,
-      ));
-    }
-
-    // Assignee badge (only if assigned to someone other than manuel)
-    if (task.assignedTo != 'manuel') {
-      if (items.isNotEmpty) items.add(const SizedBox(width: 8));
-      items.add(Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.person,
-            size: 12,
-            color: Colors.grey.shade600,
-          ),
-          const SizedBox(width: 2),
-          Text(
-            task.assignedTo,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 11,
-            ),
-          ),
-        ],
       ));
     }
 

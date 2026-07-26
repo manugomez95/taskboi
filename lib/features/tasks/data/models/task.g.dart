@@ -28,7 +28,6 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
       recurrenceAnchorDate: json['recurrence_anchor_date'] == null
           ? null
           : DateTime.parse(json['recurrence_anchor_date'] as String),
-      assignedTo: json['assigned_to'] as String? ?? 'manuel',
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),
@@ -54,7 +53,6 @@ Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
       'recurrence_rule': instance.recurrenceRule,
       'recurrence_parent_id': instance.recurrenceParentId,
       'recurrence_anchor_date': dateOnly(instance.recurrenceAnchorDate),
-      'assigned_to': instance.assignedTo,
       'created_at': utcIso(instance.createdAt),
       'updated_at': utcIso(instance.updatedAt),
     };

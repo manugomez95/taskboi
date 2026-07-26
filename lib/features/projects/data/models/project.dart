@@ -15,10 +15,6 @@ class Project with _$Project {
     @Default('folder') String? icon,
     @JsonKey(name: 'is_inbox') @Default(false) bool isInbox,
     @JsonKey(name: 'sort_order') @Default(0) int sortOrder,
-    @JsonKey(name: 'default_assignee')
-    @Default('manuel')
-    String defaultAssignee,
-    @JsonKey(name: 'agent_webhook_url') @Default('') String agentWebhookUrl,
     @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
     @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt,
   }) = _Project;

@@ -14,10 +14,6 @@ class Projects extends Table {
       boolean().withDefault(const Constant(false)).named('is_inbox')();
   IntColumn get sortOrder =>
       integer().withDefault(const Constant(0)).named('sort_order')();
-  TextColumn get defaultAssignee =>
-      text().withDefault(const Constant('manuel')).named('default_assignee')();
-  TextColumn get agentWebhookUrl =>
-      text().withDefault(const Constant('')).named('agent_webhook_url')();
   DateTimeColumn get createdAt => dateTime().nullable().named('created_at')();
   DateTimeColumn get updatedAt => dateTime().nullable().named('updated_at')();
 
@@ -58,8 +54,6 @@ class Tasks extends Table {
       text().nullable().named('recurrence_parent_id')();
   DateTimeColumn get recurrenceAnchorDate =>
       dateTime().nullable().named('recurrence_anchor_date')();
-  TextColumn get assignedTo =>
-      text().withDefault(const Constant('manuel')).named('assigned_to')();
   DateTimeColumn get createdAt => dateTime().nullable().named('created_at')();
   DateTimeColumn get updatedAt => dateTime().nullable().named('updated_at')();
 
@@ -160,7 +154,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -234,6 +228,13 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'ALTER TABLE projects ADD COLUMN agent_webhook_url TEXT NOT NULL DEFAULT \'\'',
           );
+        }
+        if (from < 10) {
+          await customStatement(
+              'ALTER TABLE projects DROP COLUMN default_assignee');
+          await customStatement(
+              'ALTER TABLE projects DROP COLUMN agent_webhook_url');
+          await customStatement('ALTER TABLE tasks DROP COLUMN assigned_to');
         }
       },
     );

@@ -29,14 +29,12 @@ export interface CreateProjectInput {
   name: string;
   color?: string;
   icon?: string;
-  defaultAssignee?: string;
 }
 
 export interface UpdateProjectInput {
   name?: string;
   color?: string;
   icon?: string;
-  defaultAssignee?: string;
 }
 
 export interface CreateTaskInput {
@@ -48,7 +46,6 @@ export interface CreateTaskInput {
   priority?: number;
   parentId?: string;
   recurrenceRule?: string;
-  assignedTo?: string;
 }
 
 export interface UpdateTaskInput {
@@ -59,7 +56,6 @@ export interface UpdateTaskInput {
   priority?: number;
   projectId?: string;
   recurrenceRule?: string;
-  assignedTo?: string;
 }
 
 export interface CompleteTaskOperationResult {
@@ -80,8 +76,6 @@ export interface TaskboiOperations {
   getTodayTasks(): Promise<unknown[]>;
   getUpcomingTasks(): Promise<unknown[]>;
   getSubtasks(parentId: string): Promise<unknown[]>;
-  getMyTasks(): Promise<unknown[]>;
-  getTasksByAssignee(assignee: string): Promise<unknown[]>;
   createTask(params: CreateTaskInput): Promise<unknown>;
   updateTask(id: string, params: UpdateTaskInput): Promise<unknown>;
   completeTask(id: string): Promise<CompleteTaskOperationResult>;
@@ -111,14 +105,12 @@ const toolValidators = {
     name: z.string().min(1),
     color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
     icon: z.string().optional(),
-    defaultAssignee: z.string().optional(),
   }),
   update_project: z.object({
     id: uuid,
     name: z.string().min(1).optional(),
     color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
     icon: z.string().optional(),
-    defaultAssignee: z.string().optional(),
   }),
   delete_project: z.object({ id: uuid }),
   list_tasks: z.object({ projectId: uuid.optional() }),
@@ -126,8 +118,6 @@ const toolValidators = {
   get_today_tasks: empty,
   get_upcoming_tasks: empty,
   get_subtasks: z.object({ parentId: uuid }),
-  get_my_tasks: empty,
-  get_tasks_by_assignee: z.object({ assignee: z.string() }),
   create_task: z.object({
     projectId: uuid,
     title: z.string().min(1),
@@ -137,7 +127,6 @@ const toolValidators = {
     priority: priority.optional(),
     parentId: uuid.optional(),
     recurrenceRule: z.string().optional(),
-    assignedTo: z.string().optional(),
   }),
   update_task: z.object({
     id: uuid,
@@ -149,7 +138,6 @@ const toolValidators = {
     priority: priority.optional(),
     projectId: uuid.optional(),
     recurrenceRule: z.string().optional(),
-    assignedTo: z.string().optional(),
   }),
   complete_task: z.object({ id: uuid }),
   uncomplete_task: z.object({ id: uuid }),
@@ -183,14 +171,12 @@ export const taskboiTools: Tool[] = [
     name: string("The project name", { minLength: 1 }),
     color: string("Hex color code (e.g., #6366F1)", { pattern: "^#[0-9A-Fa-f]{6}$" }),
     icon: string("Icon name (e.g., folder, star, work)"),
-    defaultAssignee: string("Default assignee for new tasks in this project: manuel or hermes"),
   }, ["name"]) },
   { name: "update_project", description: "Update an existing project", inputSchema: object({
     id: string("The project ID", { format: "uuid" }),
     name: string("New project name", { minLength: 1 }),
     color: string("New hex color code", { pattern: "^#[0-9A-Fa-f]{6}$" }),
     icon: string("New icon name"),
-    defaultAssignee: string("Default assignee for new tasks in this project: manuel or hermes"),
   }, ["id"]) },
   { name: "delete_project", description: "Delete a project (cannot delete Inbox)", inputSchema: object({ id: string("The project ID to delete", { format: "uuid" }) }, ["id"]) },
   { name: "list_tasks", description: "List all tasks, optionally filtered by project", inputSchema: object({ projectId: string("Filter by project ID", { format: "uuid" }) }) },
@@ -198,8 +184,6 @@ export const taskboiTools: Tool[] = [
   { name: "get_today_tasks", description: "Get all tasks due today (including overdue recurring tasks)", inputSchema: object() },
   { name: "get_upcoming_tasks", description: "Get all upcoming tasks with due dates", inputSchema: object() },
   { name: "get_subtasks", description: "Get all subtasks of a parent task", inputSchema: object({ parentId: string("The parent task ID", { format: "uuid" }) }, ["parentId"]) },
-  { name: "get_my_tasks", description: "Get all tasks assigned to the current agent (hermes)", inputSchema: object() },
-  { name: "get_tasks_by_assignee", description: "Get all tasks assigned to a specific person or agent", inputSchema: object({ assignee: string("The assignee name (manuel, hermes, or claude)") }, ["assignee"]) },
   { name: "create_task", description: "Create a new task", inputSchema: object({
     projectId: string("The project ID to add the task to", { format: "uuid" }),
     title: string("The task title", { minLength: 1 }),
@@ -209,7 +193,6 @@ export const taskboiTools: Tool[] = [
     priority: prioritySchema("Priority: 0=none, 1=urgent, 2=high, 3=normal, 4=low"),
     parentId: string("Parent task ID for subtasks", { format: "uuid" }),
     recurrenceRule: string("Recurrence rule (RRULE format): FREQ=DAILY, FREQ=WEEKLY, FREQ=MONTHLY, FREQ=YEARLY, or with options like FREQ=WEEKLY;BYDAY=MO,WE,FR"),
-    assignedTo: string("Assignee: manuel, hermes, or claude"),
   }, ["projectId", "title"]) },
   { name: "update_task", description: "Update an existing task. Omitted fields are left unchanged; to remove the due date, pass clearDueDate: true.", inputSchema: object({
     id: string("The task ID", { format: "uuid" }),
@@ -221,7 +204,6 @@ export const taskboiTools: Tool[] = [
     priority: prioritySchema("New priority: 0=none, 1=urgent, 2=high, 3=normal, 4=low"),
     projectId: string("Move to a different project", { format: "uuid" }),
     recurrenceRule: string("New recurrence rule"),
-    assignedTo: string("Assignee: manuel, hermes, or claude. When moving a task to a different project without specifying this, the task inherits the destination project's default_assignee."),
   }, ["id"]) },
   { name: "complete_task", description: "Mark a task as complete. For recurring tasks, this also creates the next occurrence.", inputSchema: object({ id: string("The task ID to complete", { format: "uuid" }) }, ["id"]) },
   { name: "uncomplete_task", description: "Mark a completed task as incomplete", inputSchema: object({ id: string("The task ID to uncomplete", { format: "uuid" }) }, ["id"]) },
@@ -284,14 +266,6 @@ export async function dispatchTaskboiTool(
       }
       case "get_subtasks": {
         const tasks = await operations.getSubtasks(input.parentId as string);
-        return json({ tasks, count: tasks.length });
-      }
-      case "get_my_tasks": {
-        const tasks = await operations.getMyTasks();
-        return json({ tasks, count: tasks.length });
-      }
-      case "get_tasks_by_assignee": {
-        const tasks = await operations.getTasksByAssignee(input.assignee as string);
         return json({ tasks, count: tasks.length });
       }
       case "create_task": {

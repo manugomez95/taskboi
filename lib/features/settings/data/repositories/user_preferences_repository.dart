@@ -284,34 +284,4 @@ class UserPreferencesRepository {
           return <String, bool>{};
         });
   }
-
-  // ============================================
-  // AGENT WEBHOOK URL (global)
-  // ============================================
-
-  /// Get the user's global agent webhook URL
-  Future<String> getAgentWebhookUrl() async {
-    if (_userId == null) return '';
-
-    try {
-      final response = await _client
-          .from(_tableName)
-          .select('agent_webhook_url')
-          .eq('id', _userId!)
-          .single();
-
-      return response['agent_webhook_url'] as String? ?? '';
-    } catch (e) {
-      return '';
-    }
-  }
-
-  /// Update the user's global agent webhook URL
-  Future<void> setAgentWebhookUrl(String url) async {
-    if (_userId == null) return;
-
-    await _client
-        .from(_tableName)
-        .update({'agent_webhook_url': url}).eq('id', _userId!);
-  }
 }

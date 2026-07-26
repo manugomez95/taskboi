@@ -21,8 +21,6 @@ class ModelConverters {
       icon: entity.icon,
       isInbox: entity.isInbox,
       sortOrder: entity.sortOrder,
-      defaultAssignee: entity.defaultAssignee,
-      agentWebhookUrl: entity.agentWebhookUrl,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -39,8 +37,6 @@ class ModelConverters {
       icon: Value(model.icon),
       isInbox: Value(model.isInbox),
       sortOrder: Value(model.sortOrder),
-      defaultAssignee: Value(model.defaultAssignee),
-      agentWebhookUrl: Value(model.agentWebhookUrl),
       createdAt: Value(model.createdAt),
       updatedAt: Value(model.updatedAt),
       isPendingSync: Value(isPendingSync),
@@ -73,7 +69,6 @@ class ModelConverters {
       recurrenceRule: entity.recurrenceRule,
       recurrenceParentId: entity.recurrenceParentId,
       recurrenceAnchorDate: entity.recurrenceAnchorDate,
-      assignedTo: entity.assignedTo,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -98,7 +93,6 @@ class ModelConverters {
       recurrenceRule: Value(model.recurrenceRule),
       recurrenceParentId: Value(model.recurrenceParentId),
       recurrenceAnchorDate: Value(model.recurrenceAnchorDate),
-      assignedTo: Value(model.assignedTo),
       createdAt: Value(model.createdAt),
       updatedAt: Value(model.updatedAt),
       isPendingSync: Value(isPendingSync),

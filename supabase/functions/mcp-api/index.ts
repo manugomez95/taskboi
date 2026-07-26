@@ -73,15 +73,9 @@ async function listProjects(
 async function createProject(
   supabase: ReturnType<typeof createClient<any>>,
   userId: string,
-  body: { name: string; color?: string; icon?: string; defaultAssignee?: string; agentWebhookUrl?: string }
+  body: { name: string; color?: string; icon?: string }
 ): Promise<Response> {
   if (!body.name) return errorResponse("name is required");
-  if (
-    body.defaultAssignee !== undefined &&
-    !["manuel", "hermes"].includes(body.defaultAssignee)
-  ) {
-    return errorResponse("defaultAssignee must be 'manuel' or 'hermes'");
-  }
 
   // Get max sort order
   const { data: maxOrder } = await supabase
@@ -102,8 +96,6 @@ async function createProject(
       color: body.color ?? "#6B7280",
       icon: body.icon ?? "folder",
       sort_order: sortOrder,
-      default_assignee: body.defaultAssignee ?? "manuel",
-      agent_webhook_url: body.agentWebhookUrl ?? "",
     })
     .select()
     .single();
@@ -134,19 +126,12 @@ async function updateProject(
   supabase: ReturnType<typeof createClient<any>>,
   userId: string,
   projectId: string,
-  body: { name?: string; color?: string; icon?: string; defaultAssignee?: string; agentWebhookUrl?: string }
+  body: { name?: string; color?: string; icon?: string }
 ): Promise<Response> {
   const updates: Record<string, unknown> = {};
   if (body.name !== undefined) updates.name = body.name;
   if (body.color !== undefined) updates.color = body.color;
   if (body.icon !== undefined) updates.icon = body.icon;
-  if (body.defaultAssignee !== undefined) {
-    if (!["manuel", "hermes"].includes(body.defaultAssignee)) {
-      return errorResponse("defaultAssignee must be 'manuel' or 'hermes'");
-    }
-    updates.default_assignee = body.defaultAssignee;
-  }
-  if (body.agentWebhookUrl !== undefined) updates.agent_webhook_url = body.agentWebhookUrl;
 
   if (Object.keys(updates).length === 0) {
     return errorResponse("No fields to update");
@@ -241,7 +226,6 @@ async function createTask(
     priority?: number;
     parentId?: string;
     recurrenceRule?: string;
-    assignedTo?: string;
   }
 ): Promise<Response> {
   if (!body.projectId) return errorResponse("projectId is required");
@@ -276,12 +260,6 @@ async function createTask(
     return errorResponse("priority must be between 0 and 4");
   }
 
-  // Validate assignee
-  const assignedTo = body.assignedTo ?? "manuel";
-  if (!["manuel", "hermes", "claude"].includes(assignedTo)) {
-    return errorResponse("assignee must be one of: manuel, hermes, claude");
-  }
-
   // Validate dueTime format (HH:MM) if provided
   if (body.dueTime !== undefined && body.dueTime !== null) {
     if (!/^\d{2}:\d{2}$/.test(body.dueTime)) {
@@ -313,7 +291,6 @@ async function createTask(
       priority,
       sort_order: sortOrder,
       recurrence_rule: body.recurrenceRule,
-      assigned_to: assignedTo,
     })
     .select()
     .single();
@@ -352,7 +329,6 @@ async function updateTask(
     priority?: number;
     projectId?: string;
     recurrenceRule?: string;
-    assignedTo?: string;
   }
 ): Promise<Response> {
   const updates: Record<string, unknown> = {};
@@ -373,24 +349,17 @@ async function updateTask(
   }
   if (body.projectId !== undefined) updates.project_id = body.projectId;
   if (body.recurrenceRule !== undefined) updates.recurrence_rule = body.recurrenceRule;
-  if (body.assignedTo !== undefined) {
-    if (!["manuel", "hermes", "claude"].includes(body.assignedTo)) {
-      return errorResponse("assignee must be one of: manuel, hermes, claude");
-    }
-    updates.assigned_to = body.assignedTo;
-  }
 
   if (Object.keys(updates).length === 0) {
     return errorResponse("No fields to update");
   }
 
   // Validate every destination project because this service-role client
-  // bypasses RLS. If the caller did not choose an assignee, inherit the
-  // tenant-owned destination project's default.
+  // bypasses RLS.
   if (body.projectId !== undefined) {
     const { data: destProject, error: projError } = await supabase
       .from("projects")
-      .select("default_assignee")
+      .select("id")
       .eq("id", body.projectId)
       .eq("user_id", userId)
       .maybeSingle();
@@ -400,9 +369,6 @@ async function updateTask(
     }
     if (!destProject) {
       return errorResponse("Destination project not found", 404);
-    }
-    if (body.assignedTo === undefined && destProject.default_assignee) {
-      updates.assigned_to = destProject.default_assignee;
     }
   }
 
@@ -721,46 +687,6 @@ async function getUpcomingTasks(
   return jsonResponse({ tasks: data });
 }
 
-// GET /tasks/mine - Get my tasks (assigned to the given agent)
-async function getMyTasks(
-  supabase: ReturnType<typeof createClient<any>>,
-  userId: string
-): Promise<Response> {
-  const assignee = "hermes";
-  const { data, error } = await supabase
-    .from("tasks")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("assigned_to", assignee)
-    .eq("is_completed", false)
-    .order("priority", { ascending: false })
-    .order("sort_order", { ascending: true });
-
-  if (error) return errorResponse(error.message, 500);
-  return jsonResponse({ tasks: data });
-}
-
-// GET /tasks/by-assignee?assignee=xxx - Get tasks by assignee
-async function getTasksByAssignee(
-  supabase: ReturnType<typeof createClient<any>>,
-  userId: string,
-  assignee: string
-): Promise<Response> {
-  if (!["manuel", "hermes", "claude"].includes(assignee)) {
-    return errorResponse("assignee must be one of: manuel, hermes, claude");
-  }
-  const { data, error } = await supabase
-    .from("tasks")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("assigned_to", assignee)
-    .order("is_completed", { ascending: true })
-    .order("sort_order", { ascending: true });
-
-  if (error) return errorResponse(error.message, 500);
-  return jsonResponse({ tasks: data });
-}
-
 // GET /tasks/:id/subtasks - Get subtasks
 async function getSubtasks(
   supabase: ReturnType<typeof createClient<any>>,
@@ -913,7 +839,7 @@ Deno.serve(async (req) => {
     if (segments[0] === "projects") {
       if (segments.length === 1) {
         if (method === "GET") return await listProjects(supabase, userId);
-        if (method === "POST") return await createProject(supabase, userId, body as { name: string; color?: string; icon?: string; defaultAssignee?: string });
+        if (method === "POST") return await createProject(supabase, userId, body as { name: string; color?: string; icon?: string });
       }
       if (segments[1] === "inbox" && method === "GET") {
         return await getInboxProject(supabase, userId);
@@ -921,7 +847,7 @@ Deno.serve(async (req) => {
       if (segments.length === 2) {
         const projectId = segments[1];
         if (method === "GET") return await getProject(supabase, userId, projectId);
-        if (method === "PATCH") return await updateProject(supabase, userId, projectId, body as { name?: string; color?: string; icon?: string; defaultAssignee?: string });
+        if (method === "PATCH") return await updateProject(supabase, userId, projectId, body as { name?: string; color?: string; icon?: string });
         if (method === "DELETE") return await deleteProject(supabase, userId, projectId);
       }
     }
@@ -943,7 +869,6 @@ Deno.serve(async (req) => {
             priority?: number;
             parentId?: string;
             recurrenceRule?: string;
-            assignedTo?: string;
           });
         }
       }
@@ -952,13 +877,6 @@ Deno.serve(async (req) => {
       }
       if (segments[1] === "upcoming" && method === "GET") {
         return await getUpcomingTasks(supabase, userId);
-      }
-      if (segments[1] === "mine" && method === "GET") {
-        return await getMyTasks(supabase, userId);
-      }
-      if (segments[1] === "by-assignee" && method === "GET") {
-        const assignee = url.searchParams.get("assignee") || "hermes";
-        return await getTasksByAssignee(supabase, userId, assignee);
       }
       if (segments.length === 2) {
         const taskId = segments[1];
@@ -971,7 +889,6 @@ Deno.serve(async (req) => {
           priority?: number;
           projectId?: string;
           recurrenceRule?: string;
-          assignedTo?: string;
         });
         if (method === "DELETE") return await deleteTask(supabase, userId, taskId);
       }

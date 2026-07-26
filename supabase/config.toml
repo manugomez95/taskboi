@@ -8,10 +8,5 @@ project_id = "public-template-project-id"
 [functions.mcp-api]
 verify_jwt = false
 
-# Invoked only by a Database Webhook authenticated with DATABASE_WEBHOOK_SECRET.
-# User JWTs are deliberately not treated as database-webhook authentication.
-[functions.notify-assignee]
-verify_jwt = false
-
 [functions.comment-images]
 verify_jwt = true

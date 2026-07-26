@@ -27,7 +27,6 @@ class Task with _$Task {
     @JsonKey(name: 'recurrence_parent_id') String? recurrenceParentId,
     @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
     DateTime? recurrenceAnchorDate,
-    @JsonKey(name: 'assigned_to') @Default('manuel') String assignedTo,
     @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
     @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt,
   }) = _Task;
