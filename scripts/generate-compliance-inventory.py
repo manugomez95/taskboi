@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate deterministic compliance evidence for the committed public MCP core."""
+"""Generate deterministic compliance evidence for the committed public core."""
 
 from __future__ import annotations
 
@@ -11,12 +11,21 @@ import subprocess
 from pathlib import Path
 
 NOASSERTION = "NOASSERTION"
-SCOPE_ROOT = "taskboi-mcp"
-SCOPE_EXCLUDES = ("taskboi-mcp/workers",)
+SCOPE_ROOT = "."
+SCOPE_EXCLUDES: tuple[str, ...] = ()
 ASSET_SUFFIXES = {
     ".a", ".bin", ".dll", ".dylib", ".gif", ".ico", ".jpeg", ".jpg",
     ".mp3", ".mp4", ".otf", ".pdf", ".png", ".so", ".ttf", ".wasm",
     ".wav", ".webp", ".zip",
+}
+AUTOMATED_DEPENDENCY_INPUTS = ("pubspec.lock",)
+FINAL_REVIEW_LOCKS = {
+    "deno.lock": "Deno dependencies",
+    "macos/Podfile.lock": "CocoaPods dependencies",
+    "macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved":
+        "Swift package dependencies",
+    "macos/Runner.xcworkspace/xcshareddata/swiftpm/Package.resolved":
+        "Swift package dependencies",
 }
 
 
@@ -35,7 +44,7 @@ def committed_bytes(repo: Path, revision: str, path: str) -> bytes:
 
 
 def scope_paths(repo: Path, revision: str) -> list[str]:
-    paths = git(repo, "ls-tree", "-r", "--name-only", revision, "--", SCOPE_ROOT).splitlines()
+    paths = git(repo, "ls-tree", "-r", "--name-only", revision).splitlines()
     return sorted(
         path for path in paths
         if not any(path == excluded or path.startswith(excluded + "/")
@@ -44,20 +53,46 @@ def scope_paths(repo: Path, revision: str) -> list[str]:
 
 
 def dependencies(repo: Path, revision: str) -> list[dict]:
-    source = f"{SCOPE_ROOT}/package-lock.json"
-    lock = json.loads(committed_bytes(repo, revision, source))
+    source = "pubspec.lock"
+    lock = committed_bytes(repo, revision, source).decode("utf-8")
     found = []
-    for lock_path, metadata in lock.get("packages", {}).items():
-        if not lock_path:
+    current_name = None
+    current_version = None
+    current_scope = "production"
+    for line in lock.splitlines():
+        package = re.match(r"^  ([A-Za-z0-9_+.-]+):$", line)
+        if package:
+            if current_name and current_version:
+                found.append({
+                    "ecosystem": "pub",
+                    "name": current_name,
+                    "version": current_version,
+                    "license_expression": NOASSERTION,
+                    "input": source,
+                    "dependency_scope": current_scope,
+                })
+            current_name = package.group(1)
+            current_version = None
+            current_scope = "production"
             continue
-        name = metadata.get("name") or lock_path.rsplit("node_modules/", 1)[-1]
+        if current_name:
+            dependency = re.match(r"^    dependency: (.+)$", line)
+            version = re.match(r'^    version: "([^"]+)"$', line)
+            if dependency:
+                current_scope = (
+                    "development" if dependency.group(1).startswith("direct dev")
+                    else "production"
+                )
+            elif version:
+                current_version = version.group(1)
+    if current_name and current_version:
         found.append({
-            "ecosystem": "npm",
-            "name": name,
-            "version": metadata.get("version") or NOASSERTION,
-            "license_expression": metadata.get("license") or NOASSERTION,
+            "ecosystem": "pub",
+            "name": current_name,
+            "version": current_version,
+            "license_expression": NOASSERTION,
             "input": source,
-            "dependency_scope": "development" if metadata.get("dev") else "production",
+            "dependency_scope": current_scope,
         })
     return sorted(found, key=lambda item: (item["name"], item["version"]))
 
@@ -68,10 +103,10 @@ def spdx_id(prefix: str, value: str) -> str:
 
 def spdx_document(inventory: dict) -> dict:
     revision = inventory["source_revision"]
-    root_id = "SPDXRef-Package-taskboi-mcp"
+    root_id = "SPDXRef-Package-taskboi"
     packages = [{
         "SPDXID": root_id,
-        "name": "taskboi-mcp",
+        "name": "taskboi",
         "versionInfo": revision,
         "downloadLocation": "NOASSERTION",
         "filesAnalyzed": False,
@@ -110,8 +145,8 @@ def spdx_document(inventory: dict) -> dict:
         "spdxVersion": "SPDX-2.3",
         "dataLicense": "CC0-1.0",
         "SPDXID": "SPDXRef-DOCUMENT",
-        "name": f"taskboi-mcp-source-{revision}",
-        "documentNamespace": f"https://taskboi.invalid/spdx/taskboi-mcp/{revision}",
+        "name": f"taskboi-source-{revision}",
+        "documentNamespace": f"https://taskboi.invalid/spdx/taskboi/{revision}",
         "creationInfo": {
             "created": "1970-01-01T00:00:00Z",
             "creators": ["Tool: generate-compliance-inventory.py"],
@@ -125,15 +160,20 @@ def spdx_document(inventory: dict) -> dict:
 
 def markdown(inventory: dict) -> str:
     lines = [
-        "# Public MCP Core Compliance Inventory",
+        "# Public Core Compliance Inventory",
         "",
         "> Engineering evidence only. This does not grant public release approval.",
         "",
         f"Source revision: `{inventory['source_revision']}`",
         "",
-        "Scope: committed files under `taskboi-mcp/`, excluding `taskboi-mcp/workers/`.",
+        "Scope: all committed files in the public core repository.",
         "",
         "Unknown license or asset provenance is preserved as `NOASSERTION`.",
+        "",
+        "Automated dependency package coverage is deliberately limited to "
+        "`pubspec.lock`. Committed Deno and native lockfiles are recorded below "
+        "as requiring final review; their packages are not represented as parsed "
+        "dependencies or SPDX package relationships.",
         "",
         "## Committed inputs",
         "",
@@ -154,6 +194,17 @@ def markdown(inventory: dict) -> str:
         f"`{item['input']}` |"
         for item in inventory["dependencies"]
     )
+    lines.extend([
+        "",
+        "## Dependency locks requiring final review",
+        "",
+        "| Path | Surface | Automated package coverage |",
+        "|---|---|---|",
+    ])
+    lines.extend(
+        f"| `{item['path']}` | {item['surface']} | {item['automated_coverage']} |"
+        for item in inventory["dependency_coverage"]["final_review_required"]
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -161,19 +212,47 @@ def build(repo: Path, revision_arg: str) -> dict:
     revision = git(repo, "rev-parse", f"{revision_arg}^{{commit}}").strip()
     paths = scope_paths(repo, revision)
     if not paths:
-        raise ValueError("public MCP source scope is empty")
+        raise ValueError("public core source scope is empty")
     inputs = [{
         "path": path,
         "sha256": hashlib.sha256(committed_bytes(repo, revision, path)).hexdigest(),
     } for path in paths]
     deps = dependencies(repo, revision)
-    assets = [{
-        "path": item["path"],
-        "sha256": item["sha256"],
-        "provenance_status": NOASSERTION,
-    } for item in inputs if Path(item["path"]).suffix.lower() in ASSET_SUFFIXES]
+    final_review_locks = [{
+        "path": path,
+        "surface": surface,
+        "automated_coverage": "none",
+        "review_gate": "required-before-artifact-or-package-publication",
+    } for path, surface in FINAL_REVIEW_LOCKS.items() if path in paths]
+    assets = []
+    for item in inputs:
+        if item["path"] == "web/index.html":
+            assets.append({
+                "path": item["path"],
+                "sha256": item["sha256"],
+                "provenance_status": NOASSERTION,
+                "distribution": {
+                    "current_candidate": "expected-in-web-archive",
+                    "verification": "presence",
+                },
+            })
+            continue
+        if Path(item["path"]).suffix.lower() not in ASSET_SUFFIXES:
+            continue
+        asset = {
+            "path": item["path"],
+            "sha256": item["sha256"],
+            "provenance_status": NOASSERTION,
+            "distribution": {"current_candidate": "not-entering"},
+        }
+        if item["path"].startswith("assets/"):
+            asset["distribution"] = {
+                "current_candidate": "expected-in-web-archive",
+                "verification": "source-sha256",
+            }
+        assets.append(asset)
     return {
-        "schema_version": 4,
+        "schema_version": 5,
         "source_revision": revision,
         "scope": {
             "kind": "committed-source",
@@ -182,6 +261,12 @@ def build(repo: Path, revision_arg: str) -> dict:
         },
         "scope_paths": paths,
         "inputs": inputs,
+        "dependency_coverage": {
+            "automated_package_inputs": list(AUTOMATED_DEPENDENCY_INPUTS),
+            "automated_package_ecosystems": ["pub"],
+            "final_review_required": final_review_locks,
+            "complete_dependency_bom": False,
+        },
         "dependencies": deps,
         "assets": assets,
         "unknown_license_dependencies": [
@@ -190,7 +275,12 @@ def build(repo: Path, revision_arg: str) -> dict:
         "unknown_provenance_assets": [
             item for item in assets if item["provenance_status"] == NOASSERTION
         ],
-        "disclaimer": "Engineering evidence only; no public release approval is asserted.",
+        "disclaimer": (
+            "Engineering evidence only; no public release approval is asserted. "
+            "Automated dependency package and SPDX relationship coverage is "
+            "limited to pubspec.lock; recorded Deno and native locks require "
+            "final review and have no automated package coverage."
+        ),
     }
 
 

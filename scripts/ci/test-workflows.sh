@@ -25,6 +25,9 @@ grep -F 'dart run build_runner build --delete-conflicting-outputs' "$CI" >/dev/n
   || fail "CI does not regenerate committed Flutter sources"
 grep -F 'scripts/ci/check-generated-output.sh' "$CI" >/dev/null \
   || fail "CI does not reject generated tree drift"
+if grep -Eiq 'taskboi-mcp|cache-dependency-path:.*package-lock|npm (ci|pack|publish)' "$CI" "$RELEASE"; then
+  fail "core workflows must not reference or package the separated MCP project"
+fi
 if ! ruby -rpsych -e '
   begin
     workflow = Psych.safe_load(File.read(ARGV.fetch(0)), aliases: false)

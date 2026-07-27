@@ -8,22 +8,6 @@ updates:
     groups:
       dart-dependencies:
         patterns: ["*"]
-  - package-ecosystem: npm
-    directory: /taskboi-mcp
-    schedule:
-      interval: weekly
-      day: monday
-    groups:
-      mcp-dependencies:
-        patterns: ["*"]
-  - package-ecosystem: npm
-    directory: /taskboi-mcp/workers
-    schedule:
-      interval: weekly
-      day: monday
-    groups:
-      worker-dependencies:
-        patterns: ["*"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

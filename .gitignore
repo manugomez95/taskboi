@@ -69,16 +69,8 @@ windows/flutter/generated_plugin_registrant.h
 linux/flutter/generated_plugin_registrant.cc
 linux/flutter/generated_plugin_registrant.h
 
-# MCP Server (taskboi-mcp)
-taskboi-mcp/node_modules/
-taskboi-mcp/dist/
-
-# MCP config (contains API keys)
-.mcp.json
-
 # Supabase temp files
 supabase/.temp/
-taskboi-mcp/supabase/
 
 # Android signing
 android/key.properties
@@ -98,4 +90,3 @@ Gemfile.lock
 *.pkg
 *.aab
 *.apk
-.playwright-mcp/*

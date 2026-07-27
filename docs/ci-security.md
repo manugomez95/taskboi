@@ -15,9 +15,9 @@ Configure rulesets or branch protection for both `main` and `develop`:
   stale approvals;
 - require CODEOWNER review when a `CODEOWNERS` file is introduced;
 - require conversation resolution and branches to be current before merge;
-- require the checks `Flutter tests and analyze`, `MCP build and typecheck`,
-  `Worker tests and typecheck`, `Migrations and Supabase functions`,
-  `Secret scan`, and `Workflow regression checks`;
+- require the checks `Flutter tests and analyze`,
+  `Migrations and Supabase functions`, `Secret scan`, and
+  `Workflow regression checks`;
 - block force pushes, branch deletion, and bypasses (including administrators);
 - require signed commits where the organization can support them;
 - disable merge commits if linear history is required by the release process.
@@ -56,7 +56,6 @@ public-repository policy is managed separately from this internal CI workflow.
 ## Reproducibility rules
 
 - Dart uses committed `pubspec.lock` with `--enforce-lockfile`.
-- Both Node projects use committed `package-lock.json` files with `npm ci`.
 - Deno remote modules use exact versions and integrity data in `deno.lock`.
 - Flutter is checked out by commit, including in Netlify builds.
 - Flutter code generation runs in CI and `scripts/ci/check-generated-output.sh`

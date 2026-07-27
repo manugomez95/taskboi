@@ -23,23 +23,60 @@ inventory = json.load(open(sys.argv[1], encoding="utf-8"))
 assert inventory["source_revision"] == sys.argv[2]
 assert inventory["scope"] == {
     "kind": "committed-source",
-    "root": "taskboi-mcp",
-    "excludes": ["taskboi-mcp/workers"],
+    "root": ".",
+    "excludes": [],
 }
 assert inventory["inputs"]
-assert all(item["path"].startswith("taskboi-mcp/") for item in inventory["inputs"])
-assert all(not item["path"].startswith("taskboi-mcp/workers/") for item in inventory["inputs"])
+assert "pubspec.lock" in {item["path"] for item in inventory["inputs"]}
+assert not any(item["path"].startswith("taskboi-mcp/") for item in inventory["inputs"])
 assert {item["path"] for item in inventory["inputs"]} == set(
     inventory["scope_paths"]
 )
 assert all(len(item["sha256"]) == 64 for item in inventory["inputs"])
 assert inventory["dependencies"]
+assert inventory["dependency_coverage"] == {
+    "automated_package_inputs": ["pubspec.lock"],
+    "automated_package_ecosystems": ["pub"],
+    "complete_dependency_bom": False,
+    "final_review_required": [
+        {
+            "path": "deno.lock",
+            "surface": "Deno dependencies",
+            "automated_coverage": "none",
+            "review_gate": "required-before-artifact-or-package-publication",
+        },
+        {
+            "path": "macos/Podfile.lock",
+            "surface": "CocoaPods dependencies",
+            "automated_coverage": "none",
+            "review_gate": "required-before-artifact-or-package-publication",
+        },
+        {
+            "path": "macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+            "surface": "Swift package dependencies",
+            "automated_coverage": "none",
+            "review_gate": "required-before-artifact-or-package-publication",
+        },
+        {
+            "path": "macos/Runner.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+            "surface": "Swift package dependencies",
+            "automated_coverage": "none",
+            "review_gate": "required-before-artifact-or-package-publication",
+        },
+    ],
+}
 assert all(
     {"name", "version", "license_expression", "input"} <= set(item)
     for item in inventory["dependencies"]
 )
-assert inventory["assets"] == []
-assert inventory["unknown_provenance_assets"] == []
+assert inventory["assets"]
+assert inventory["unknown_provenance_assets"] == inventory["assets"]
+assert all("distribution" in item for item in inventory["assets"])
+web_index = next(item for item in inventory["assets"] if item["path"] == "web/index.html")
+assert web_index["distribution"] == {
+    "current_candidate": "expected-in-web-archive",
+    "verification": "presence",
+}
 PY
 
 python3 "$REPO_ROOT/scripts/validate-spdx.py" \
@@ -48,15 +85,14 @@ python3 "$REPO_ROOT/scripts/validate-spdx.py" \
 
 # Unknown license metadata and source asset provenance must never be guessed.
 fixture="$test_dir/fixture"
-mkdir -p "$fixture/taskboi-mcp/src"
+mkdir -p "$fixture/assets" "$fixture/web"
 git -C "$fixture" init -q
 git -C "$fixture" config user.name "Compliance Test"
 git -C "$fixture" config user.email "compliance-test@example.invalid"
-printf '%s\n' '{"name":"fixture","version":"1.0.0"}' >"$fixture/taskboi-mcp/package.json"
-printf '%s\n' '{"lockfileVersion":3,"packages":{"":{"name":"fixture","version":"1.0.0"},"node_modules/unknown-package":{"version":"1.2.3"}}}' \
-  >"$fixture/taskboi-mcp/package-lock.json"
-printf 'binary fixture\n' >"$fixture/taskboi-mcp/src/unknown.png"
-git -C "$fixture" add taskboi-mcp
+printf '%s\n' 'packages:' '  unknown_package:' '    dependency: direct main' '    description: unknown_package' '    source: hosted' '    version: "1.2.3"' >"$fixture/pubspec.lock"
+printf 'binary fixture\n' >"$fixture/assets/unknown.png"
+printf '<!doctype html>\n' >"$fixture/web/index.html"
+git -C "$fixture" add pubspec.lock assets web
 git -C "$fixture" commit -qm "test: add compliance fixture"
 python3 "$REPO_ROOT/scripts/generate-compliance-inventory.py" \
   --repo "$fixture" --revision HEAD --output-dir "$test_dir/fixture-evidence" >/dev/null
@@ -69,6 +105,14 @@ assert inventory["dependencies"][0]["license_expression"] == "NOASSERTION"
 assert inventory["assets"][0]["provenance_status"] == "NOASSERTION"
 assert inventory["unknown_license_dependencies"] == inventory["dependencies"]
 assert inventory["unknown_provenance_assets"] == inventory["assets"]
+assert inventory["dependency_coverage"]["complete_dependency_bom"] is False
+assert inventory["dependency_coverage"]["final_review_required"] == []
+assert next(item for item in inventory["assets"] if item["path"] == "web/index.html")[
+    "distribution"
+] == {
+    "current_candidate": "expected-in-web-archive",
+    "verification": "presence",
+}
 PY
 
 # The canonical record is deliberately unapproved and must fail closed.

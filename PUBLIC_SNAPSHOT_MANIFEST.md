@@ -7,7 +7,7 @@ legal approval, deployment approval, or a statement about any live service.
 ## Included
 
 The tracked application, Flutter/Dart source, tests, platform project source,
-Supabase schema/functions/tests, MCP/Worker source, documentation, policy
+Supabase schema/functions/tests, documentation, policy
 files, dependency manifests/locks, and public CI source are included, subject
 to the exclusions and sanitizations below. `assets/icons/app_icon.jpg` is
 included under the owner attestation recorded in `ASSET_PROVENANCE.md`.
@@ -41,10 +41,6 @@ included under the owner attestation recorded in `ASSET_PROVENANCE.md`.
 - `supabase/config.toml`: project linkage replaced with
   `public-template-project-id`; alternatively remove the line and run
   `supabase link` against an operator-owned project.
-- `taskboi-mcp/workers/wrangler.toml`: Worker name and canonical issuer use
-  template placeholders. No Worker secret placeholder values were added;
-  encryption/client secrets must be provisioned through the Worker secret
-  store.
 
 ## Exact source paths omitted
 
@@ -113,3 +109,9 @@ packaging. The neutral iOS launch images are structural placeholders only and
 should be replaced with operator-owned artwork before release. Configure all
 services, OAuth registrations, Supabase linkage, and deployment identities in
 operator-owned environments.
+
+The MCP integration is a separate project and is not included, packaged, or
+released from this public core. Configure it according to the canonical
+[Taskboi MCP repository](https://github.com/manugomez95/taskboi-mcp).
+The separated repository's immutable root commit is
+[`ad12b274b9f29b78463e57daf0115afa8b1e09d5`](https://github.com/manugomez95/taskboi-mcp/commit/ad12b274b9f29b78463e57daf0115afa8b1e09d5).

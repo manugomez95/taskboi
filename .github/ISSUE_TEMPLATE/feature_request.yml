@@ -28,7 +28,7 @@ body:
     id: impact
     attributes:
       label: Security, privacy, migration, and compatibility impact
-      description: Note data model, MCP, Worker, offline, and platform implications.
+      description: Note data model, external integration, offline, and platform implications.
     validations:
       required: true
   - type: textarea

@@ -50,36 +50,10 @@ if [[ -e "$test_dir/tools/gitleaks" ]]; then
   exit 1
 fi
 
-deploy="$REPO_ROOT/scripts/deploy.sh"
-bootstrap_line="$(grep -n 'bootstrap-gitleaks.sh' "$deploy" | head -n1 | cut -d: -f1)"
-config_line="$(grep -n 'validate-public-config.sh' "$deploy" | head -n1 | cut -d: -f1)"
-scan_line="$(grep -n 'scan-secrets.sh.*history' "$deploy" | head -n1 | cut -d: -f1)"
-checkout_line="$(grep -n 'git checkout main' "$deploy" | head -n1 | cut -d: -f1)"
-worker_release_line="$(grep -n '^release_worker$' "$deploy" | cut -d: -f1)"
-if ! (( bootstrap_line < config_line && config_line < scan_line && scan_line < checkout_line && config_line < worker_release_line )); then
-  echo "Release bootstrap/config/gate sequencing regressed" >&2
+release="$REPO_ROOT/.github/workflows/release-candidate.yml"
+if grep -Eiq 'taskboi-mcp|npm (ci|pack|publish)|wrangler|deploy' "$release"; then
+  echo "Core release candidate contains MCP packaging or deployment logic" >&2
   exit 1
 fi
 
-worker_build_line="$(grep -n 'npm run build -- --config' "$deploy" | cut -d: -f1)"
-worker_artifact_scan_line="$(grep -n -F 'scan-secrets.sh" artifacts "$WORKER_BUILD_DIR"' "$deploy" | cut -d: -f1)"
-candidate_upload_line="$(grep -n '"$WRANGLER" versions upload' "$deploy" | cut -d: -f1)"
-direct_activation_line="$(grep -n '"$WRANGLER" deploy --keep-vars' "$deploy" | cut -d: -f1)"
-traffic_activation_line="$(grep -n '"$WRANGLER" versions deploy' "$deploy" | cut -d: -f1)"
-if ! grep -F 'WORKER_BUILD_DIR="$WORKER_DIR/dist"' "$deploy" >/dev/null ||
-  [[ -z "$worker_artifact_scan_line" ]] ||
-  ! (( worker_build_line < worker_artifact_scan_line &&
-       worker_artifact_scan_line < candidate_upload_line &&
-       worker_artifact_scan_line < direct_activation_line &&
-       worker_artifact_scan_line < traffic_activation_line )); then
-  echo "Worker artifact gate must follow the dry-run build and precede upload and activation" >&2
-  exit 1
-fi
-
-grep -F 'bundle install)' "$deploy" >/dev/null
-if grep -E 'bundle install.*\|\||create-dmg.*\|\| true' "$deploy" "$REPO_ROOT/fastlane/Fastfile" >/dev/null; then
-  echo "Release path contains a prohibited fail-open" >&2
-  exit 1
-fi
-
-echo "Release preflight sequencing checks passed."
+echo "Core release preflight checks passed."

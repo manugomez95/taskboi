@@ -25,7 +25,7 @@ flutter build appbundle --release \
   --dart-define=PUBLIC_SUPABASE_ANON_KEY="$PUBLIC_SUPABASE_ANON_KEY"
 ```
 
-Although these values are public, avoid printing command traces or generated define files: build logs are durable and the same hygiene prevents a privileged value from being substituted accidentally. Server and Worker credentials belong in the hosting provider's encrypted secret store. Grant CI access only to the environment it releases, mask log output, and never pass privileged values through Flutter `--dart-define`, source files, build assets, or repository variables intended for public configuration.
+Although these values are public, avoid printing command traces or generated define files: build logs are durable and the same hygiene prevents a privileged value from being substituted accidentally. Server credentials belong in the hosting provider's encrypted secret store. Grant CI access only to the environment it releases, mask log output, and never pass privileged values through Flutter `--dart-define`, source files, build assets, or repository variables intended for public configuration.
 
 ## Required release gates
 
@@ -43,7 +43,7 @@ After building and before upload or deployment, scan the exact release outputs. 
 ./scripts/scan-secrets.sh artifacts build/app/outputs/bundle/release/app-release.aab build/web
 ```
 
-Pass every artifact being released (for example an AAB, APK, IPA, app bundle, web output, or Worker bundle). A missing path, unavailable/wrong scanner version, scanner error, or finding blocks release. Scanner output is captured and discarded; the gate reports only pass/fail and never secret contents. CI should run both commands on a full clone (`fetch-depth: 0`) and must not upload artifacts unless both succeed.
+Pass every artifact being released (for example an AAB, APK, IPA, app bundle, or web output). A missing path, unavailable/wrong scanner version, scanner error, or finding blocks release. Scanner output is captured and discarded; the gate reports only pass/fail and never secret contents. CI should run both commands on a full clone (`fetch-depth: 0`) and must not upload artifacts unless both succeed.
 
 ## Exposure response
 

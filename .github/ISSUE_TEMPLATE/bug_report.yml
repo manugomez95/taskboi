@@ -14,8 +14,7 @@ body:
       options:
         - Flutter client
         - Supabase/database
-        - Local MCP server
-        - Remote MCP Worker
+        - External integration
         - Documentation or tooling
     validations:
       required: true

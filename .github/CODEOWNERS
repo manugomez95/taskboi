@@ -4,7 +4,6 @@
 
 # Security-sensitive backend and release operations.
 /supabase/ @manugomez95
-/taskboi-mcp/workers/ @manugomez95
 /scripts/ @manugomez95
 /.github/ @manugomez95
 /SECURITY.md @manugomez95
