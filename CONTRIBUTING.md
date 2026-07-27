@@ -45,21 +45,10 @@ flutter test --dart-define-from-file=public-config.local.json
 deno task check
 deno task test
 scripts/ci/check-migrations.sh
-
-cd taskboi-mcp
-npm ci
-npm run build
-
-cd workers
-npm ci
-npm test
-npm run typecheck
-npm run build
 ```
 
-`npm run build` in the Worker is a Wrangler dry run. Do not run `npm run deploy`,
-`wrangler deploy`, `scripts/deploy.sh`, Fastlane release lanes, or production
-Supabase commands as part of contribution validation.
+Do not run deployment, Fastlane release lanes, or production Supabase commands
+as part of contribution validation.
 
 Integration tests may need a disposable local Supabase stack and an emulator or
 device:
@@ -96,17 +85,13 @@ scripts, Edge Function deployment, or privacy finalization. Those are release
 operator actions requiring backups, compatible clients, and authorized secret
 access.
 
-## MCP changes
+## MCP integration
 
-For the local server, use fake keys in examples and build with `npm run build`.
-Do not commit a real `TASKBOI_API_KEY` or add it to a repository-level MCP file.
-Tests must mock network calls and must not modify a real Taskboi account.
-
-For the remote Worker, keep OAuth tests local. Secret bindings such as
-`OAUTH_ENCRYPTION_KEY` belong only in an authorized provider secret store.
-Plaintext production bindings must not be copied into pull requests or logs.
-Changes to OAuth, Durable Objects, bindings, or deployment logic require review
-from the code owner and the full Worker test/typecheck/dry-run build.
+The MCP integration is a separate project. Propose server, Worker, packaging,
+and MCP-specific documentation changes in the canonical
+[Taskboi MCP repository](https://github.com/manugomez95/taskboi-mcp) and
+configure the integration according to that repository. Do not vendor or add a
+local MCP package to this public core repository.
 
 ## Pull requests
 

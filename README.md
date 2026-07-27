@@ -43,7 +43,6 @@ This repository currently documents a developer-oriented self-hosting path. A on
 
 - Flutter SDK compatible with Dart `^3.6.2`
 - Docker and the Supabase CLI
-- Node.js 18+ and npm when working on MCP components
 - The platform toolchain for your chosen Flutter target
 
 ### Run locally
@@ -85,8 +84,7 @@ For database operations, migrations, and production-oriented safeguards, read [t
 | --- | --- |
 | Flutter client (`lib/`) | UI, local database, authentication, and sync |
 | Supabase (`supabase/`) | PostgreSQL schema, RLS, auth, realtime, storage, and functions |
-| Local MCP server (`taskboi-mcp/`) | Optional MCP integration for locally configured clients |
-| Remote MCP worker (`taskboi-mcp/workers/`) | Optional operator-managed OAuth MCP service |
+| MCP integration | Separate optional project maintained in the canonical [Taskboi MCP repository](https://github.com/manugomez95/taskboi-mcp) |
 
 The app writes locally first, then synchronizes authenticated data with your Supabase instance. Row-level security and server-side validation are the authorization boundary; client-side checks are not a replacement for them.
 
@@ -100,7 +98,12 @@ Taskboi Cloud is planned and not available yet. Until it launches, use your own 
 
 ## MCP integrations
 
-MCP is optional. The local server and remote OAuth worker are for operators who want AI clients to interact with their Taskboi data. See [the local MCP documentation](taskboi-mcp/README.md) and [the remote worker documentation](taskboi-mcp/workers/README.md) before deploying or connecting an MCP client.
+MCP is optional and is maintained as a separate project. This repository does
+not contain an MCP server, Worker, package, or local MCP setup. Configure the
+integration by following the canonical
+[Taskboi MCP repository](https://github.com/manugomez95/taskboi-mcp).
+Its public history starts at immutable extraction commit
+[`ad12b274b9f29b78463e57daf0115afa8b1e09d5`](https://github.com/manugomez95/taskboi-mcp/commit/ad12b274b9f29b78463e57daf0115afa8b1e09d5).
 
 ## Documentation
 

@@ -12,7 +12,6 @@ permissions:
 
 env:
   FLUTTER_REVISION: 924134a44c189315be2148659913dda1671cbe99
-  NODE_VERSION: 22.14.0
 
 jobs:
   package:
@@ -30,11 +29,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: taskboi-mcp/package-lock.json
       - name: Install pinned Flutter
         shell: bash
         run: |
@@ -52,12 +46,9 @@ jobs:
           printf '%s\n' '{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-release-value"}' > "$config_file"
           flutter pub get --enforce-lockfile
           flutter build web --release --dart-define-from-file="$config_file"
-          npm ci --ignore-scripts --prefix taskboi-mcp
-          npm run build --prefix taskboi-mcp
           mkdir -p release
           tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
             -czf release/taskboi-web.tar.gz -C build/web .
-          (cd taskboi-mcp && npm pack --pack-destination "$PWD/../release")
       - uses: anchore/sbom-action@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
         with:
           path: .
@@ -73,13 +64,9 @@ jobs:
       - name: Verify actual candidate contents against inventory scope
         shell: bash
         run: |
-          npm_package="$(find release -maxdepth 1 -type f -name 'taskboi-mcp-*.tgz' -print -quit)"
-          test -n "$npm_package"
           scripts/verify-release-candidate.py \
             --inventory release/oss-compliance-inventory.json \
             --web-archive release/taskboi-web.tar.gz \
-            --npm-package "$npm_package" \
-            --npm-source taskboi-mcp \
             --output release/release-candidate-inventory-comparison.json
       - name: Generate and verify candidate checksums
         working-directory: release

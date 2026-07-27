@@ -29,15 +29,13 @@ A maintainer must verify all of the following before publishing:
 2. The intended commit is reviewed, the worktree is clean, and the version and
    changelog agree across release artifacts.
 3. Flutter formatting, analysis, unit/widget tests, applicable integration and
-   Supabase tests, MCP build, and Worker test/typecheck/dry-run build pass.
+   Supabase tests and applicable core source-policy checks pass.
 4. Security reports affecting the release are resolved or explicitly assessed;
    generated artifacts and dependency changes have been reviewed.
 5. Database backups, rollback/forward-fix plans, client compatibility, and every
    migration precondition in [the database runbook](../supabase/README.md) are
    confirmed by an authorized operator.
-6. Worker bindings and secrets are configured and validated by an authorized
-   operator following [the Worker runbook](../taskboi-mcp/workers/README.md).
-7. Published artifacts, release notes, tags, and package metadata make the same
+6. Published source, release notes, tags, and metadata make the same
    support and license claims.
 
 > **Maintainer decision required — dependency licensing:** before the first
@@ -53,11 +51,12 @@ freezes the changelog, runs the gates above, and creates an annotated Git tag
 for the exact reviewed commit. GitHub releases and other artifacts should be
 built from that tag with release notes copied from the changelog.
 
-Deployment is a separate, authorized operation. `scripts/deploy.sh` can push,
-bump versions, deploy a Worker, and invoke store release automation; it must not
-be used for ordinary validation or by untrusted contributions. Production
-migrations and guarded finalization steps must be recorded without recording
-secrets.
+Deployment is a separate, authorized operation and is not performed by this
+repository's release-candidate workflow. Production migrations and guarded
+finalization steps must be recorded without recording secrets.
+
+The public repository is distributed as source only. It does not package,
+publish, or release the separate MCP project.
 
 The release owner must record the version, tag, reviewed commit, completed gate
 evidence, published artifacts, and any authorized operator actions in the

@@ -23,6 +23,9 @@ after the first public release and resolution of all release blockers.
 
 ### Changed
 
+- Moved the MCP server and Worker implementation to the separate canonical
+  Taskboi MCP repository; this public core no longer packages or releases MCP
+  artifacts.
 - Removed fixed agent assignment profiles, webhook dispatch, and assignee-only
   task query surfaces from the portable OSS core.
 - Reworked the README for external setup, architecture, configuration security,

@@ -14,7 +14,6 @@ permissions:
 
 env:
   FLUTTER_REVISION: 924134a44c189315be2148659913dda1671cbe99
-  NODE_VERSION: 22.14.0
   DENO_VERSION: 2.9.3
 
 jobs:
@@ -48,48 +47,6 @@ jobs:
           trap 'rm -f "$config_file"' EXIT
           printf '%s\n' '{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-ci-value"}' > "$config_file"
           flutter test --dart-define-from-file="$config_file"
-
-  mcp:
-    name: MCP build and typecheck
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: taskboi-mcp
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: taskboi-mcp/package-lock.json
-      - run: npm ci --ignore-scripts
-      - name: Build and typecheck
-        run: npm run build
-
-  worker:
-    name: Worker tests and typecheck
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: taskboi-mcp/workers
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: taskboi-mcp/workers/package-lock.json
-      - run: npm ci --ignore-scripts
-      - run: npm test
-      - run: npm run typecheck
-      - name: Reproducible dry-run build
-        run: npm run build
 
   backend-static:
     name: Migrations and Supabase functions
