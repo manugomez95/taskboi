@@ -178,7 +178,7 @@ extension UndoRefExtension on WidgetRef {
       notifier.clearPendingCompletion(taskId);
     });
 
-    if (!context.mounted) return;
+    if (!context.mounted && messenger == null) return;
 
     UndoSnackBarService._showUndoSnackBar(
       context,
