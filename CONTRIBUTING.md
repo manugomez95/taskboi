@@ -34,18 +34,27 @@ contribution work.
 
 ## Checks
 
-Run the checks relevant to the change; before requesting review, prefer the full
-set when your environment supports it:
+The canonical local technical-health command runs the same source-only
+validation surfaces as pull-request CI:
 
 ```sh
-dart format --output=none --set-exit-if-changed lib test integration_test
-flutter analyze
-flutter test --dart-define-from-file=public-config.local.json
-
-deno task check
-deno task test
-scripts/ci/check-migrations.sh
+scripts/ci/technical-health.sh
 ```
+
+It requires the repository-approved Flutter revision
+`924134a44c189315be2148659913dda1671cbe99`, the revision installed by CI, and
+Deno `2.9.3`. The command uses an inert temporary public configuration for
+Flutter tests; it does not use `public-config.local.json`.
+
+For a focused check, pass one or more explicitly named components. The component
+names are `flutter-dependencies`, `flutter-generated`, `flutter-format`,
+`flutter-analyze`, `flutter-test`, `backend-migrations`, `backend-check`,
+`backend-test`, `secret-scan`, and `workflows`. Pull-request CI invokes these
+same components in separate steps and jobs so failures remain actionable.
+
+The repository does not configure a reliable unused-Dart-dependency detector,
+so technical health does not claim to detect unused dependencies. Dependency
+changes still require the release review described above.
 
 Do not run deployment, Fastlane release lanes, or production Supabase commands
 as part of contribution validation.
