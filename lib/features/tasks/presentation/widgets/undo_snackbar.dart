@@ -169,27 +169,32 @@ extension UndoRefExtension on WidgetRef {
     // Mark as pending completion immediately for optimistic UI
     notifier.markPendingCompletion(taskId);
 
-    // Actually complete the task in the database
-    await notifier.completeTask(taskId);
-
-    // Clear pending completion after delay to let stream catch up
-    // This ensures the task stays hidden even if realtime sync causes flicker
-    Future.delayed(const Duration(milliseconds: 500), () {
-      notifier.clearPendingCompletion(taskId);
-    });
-
-    if (!context.mounted && messenger == null) return;
+    var undoRequested = false;
+    final completion = notifier.completeTask(taskId);
 
     UndoSnackBarService._showUndoSnackBar(
       context,
       message: '"$taskTitle" completed',
-      onUndo: () async {
-        // Clear pending completion since we're undoing
+      onUndo: () {
+        undoRequested = true;
         notifier.clearPendingCompletion(taskId);
-        await notifier.uncompleteTask(taskId);
+        unawaited(() async {
+          await completion;
+          await notifier.uncompleteTask(taskId);
+        }());
       },
       messenger: scaffoldMessenger,
     );
+
+    await completion;
+    if (undoRequested) return;
+
+    // Keep the overlay until the local stream has observed the durable write.
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!undoRequested) {
+        notifier.clearPendingCompletion(taskId);
+      }
+    });
   }
 
   /// Uncomplete a task with undo support

@@ -14,6 +14,31 @@ import '../../data/models/task.dart';
 import '../../providers/tasks_provider.dart';
 import '../widgets/quick_add_task_sheet.dart';
 import '../widgets/task_tile.dart';
+import '../widgets/undo_snackbar.dart';
+
+List<Task> mergeExitingTaskSnapshots(
+  Iterable<Task> sourceTasks,
+  Iterable<Task> exitingSnapshots,
+) {
+  final snapshotsById = {
+    for (final snapshot in exitingSnapshots) snapshot.id: snapshot,
+  };
+  final mergedTasks = <Task>[];
+  final addedIds = <String>{};
+
+  for (final task in sourceTasks) {
+    if (addedIds.add(task.id)) {
+      mergedTasks.add(snapshotsById.remove(task.id) ?? task);
+    }
+  }
+  for (final snapshot in snapshotsById.values) {
+    if (addedIds.add(snapshot.id)) {
+      mergedTasks.add(snapshot);
+    }
+  }
+
+  return mergedTasks;
+}
 
 class TaskListScreen extends ConsumerStatefulWidget {
   final String? projectId;
@@ -31,6 +56,7 @@ class TaskListScreen extends ConsumerStatefulWidget {
 
 class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   final MenuController _sortMenuController = MenuController();
+  final Map<String, Task> _exitingTasks = {};
 
   /// Get the view key for the current screen (used for per-view sort persistence)
   String get _viewKey {
@@ -255,12 +281,14 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
     return tasksAsync.when(
       data: (tasks) {
-        if (tasks.isEmpty) {
-          return _buildEmptyState(l10n.noUpcomingTasks);
-        }
-
         // Apply per-view sorting
-        final sortedTasks = applySorting(tasks, sortOption);
+        final sortedTasks = applySorting(
+          mergeExitingTaskSnapshots(
+            tasks.where((task) => !task.isCompleted),
+            _exitingTasks.values,
+          ),
+          sortOption,
+        );
 
         // Group tasks by date
         final grouped = <DateTime, List<Task>>{};
@@ -277,45 +305,67 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
         final sortedDates = grouped.keys.toList()..sort();
 
-        return ListView.builder(
+        return CustomScrollView(
+          key: ValueKey('task-list-$_viewKey'),
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 80),
-          itemCount: sortedDates.length,
-          itemBuilder: (context, index) {
-            final date = sortedDates[index];
-            final dateTasks = grouped[date]!;
-            final isToday = _isToday(date);
-            final isTomorrow = _isTomorrow(date);
+          slivers: [
+            if (sortedDates.isEmpty)
+              _buildEmptyStateSliver(l10n.noUpcomingTasks)
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final date = sortedDates[index];
+                    final dateTasks = grouped[date]!;
+                    final isToday = _isToday(date);
+                    final isTomorrow = _isTomorrow(date);
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    isToday
-                        ? l10n.today
-                        : isTomorrow
-                            ? l10n.tomorrow
-                            : DateFormat('EEE, MMM d').format(date),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isToday
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                          child: Text(
+                            isToday
+                                ? l10n.today
+                                : isTomorrow
+                                    ? l10n.tomorrow
+                                    : DateFormat('EEE, MMM d').format(date),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: isToday
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
+                          ),
                         ),
-                  ),
+                        ...dateTasks.map((task) {
+                          final exiting = _exitingTasks.containsKey(task.id);
+                          final tile = TaskTile(
+                            key: ValueKey(task.id),
+                            task: task,
+                            showProject: true,
+                            onToggleComplete:
+                                exiting ? null : _toggleTaskCompletion,
+                          );
+                          if (!exiting) return tile;
+                          return _CompletionExitTransition(
+                            key: ValueKey('completion-exit-${task.id}'),
+                            onFinished: () => _finishCompletionExit(task.id),
+                            child: IgnorePointer(child: tile),
+                          );
+                        }),
+                      ],
+                    );
+                  },
+                  childCount: sortedDates.length,
                 ),
-                ...dateTasks.map(
-                  (task) => TaskTile(
-                    key: ValueKey(task.id),
-                    task: task,
-                    showProject: true,
-                  ),
-                ),
-              ],
-            );
-          },
+              ),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -373,20 +423,28 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final showCompleted = ref.watch(showCompletedProvider(_viewKey));
 
     final incompleteTasks = tasks.where((t) => !t.isCompleted).toList();
-    final completedTasks = tasks.where((t) => t.isCompleted).toList();
-
-    // Show empty state only if no incomplete tasks (completed tasks may be hidden)
-    if (incompleteTasks.isEmpty && (!showCompleted || completedTasks.isEmpty)) {
-      return _buildEmptyState(emptyMessage);
-    }
+    final completedTasks = tasks
+        .where(
+          (task) => task.isCompleted && !_exitingTasks.containsKey(task.id),
+        )
+        .toList();
+    final transitioningTasks = applySorting(
+      mergeExitingTaskSnapshots(incompleteTasks, _exitingTasks.values),
+      sortOption,
+    );
+    final hasVisibleTasks = transitioningTasks.isNotEmpty ||
+        (showCompleted && completedTasks.isNotEmpty);
 
     // Only allow drag-and-drop reordering when sorting is set to manual
     final canReorder = sortOption == TaskSortOption.manual;
 
     return CustomScrollView(
+      key: ValueKey('task-list-$_viewKey'),
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
-        if (canReorder)
+        if (!hasVisibleTasks)
+          _buildEmptyStateSliver(emptyMessage)
+        else if (canReorder && _exitingTasks.isEmpty)
           SliverReorderableList(
             itemCount: incompleteTasks.length,
             onReorderItem: (oldIndex, newIndex) {
@@ -402,7 +460,11 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
               return DelayedReorderableListener(
                 key: ValueKey(task.id),
                 index: index,
-                child: TaskTile(task: task, showProject: showProject),
+                child: TaskTile(
+                  task: task,
+                  showProject: showProject,
+                  onToggleComplete: _toggleTaskCompletion,
+                ),
               );
             },
           )
@@ -410,14 +472,22 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final task = incompleteTasks[index];
-                return TaskTile(
+                final task = transitioningTasks[index];
+                final exiting = _exitingTasks.containsKey(task.id);
+                final tile = TaskTile(
                   key: ValueKey(task.id),
                   task: task,
                   showProject: showProject,
+                  onToggleComplete: exiting ? null : _toggleTaskCompletion,
+                );
+                if (!exiting) return tile;
+                return _CompletionExitTransition(
+                  key: ValueKey('completion-exit-${task.id}'),
+                  onFinished: () => _finishCompletionExit(task.id),
+                  child: IgnorePointer(child: tile),
                 );
               },
-              childCount: incompleteTasks.length,
+              childCount: transitioningTasks.length,
             ),
           ),
         if (showCompleted && completedTasks.isNotEmpty) ...[
@@ -455,45 +525,60 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     );
   }
 
-  Widget _buildEmptyState(String message) {
-    // Wrap in a scrollable so RefreshIndicator works
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverFillRemaining(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.check_circle_outline,
-                  size: 64,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  message,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (widget.filter == TaskFilter.all ||
-                    widget.filter == TaskFilter.today)
-                  Text(
-                    AppLocalizations.of(context)!.tapToAddTask,
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 14,
-                    ),
-                  ),
-              ],
+  SliverFillRemaining _buildEmptyStateSliver(String message) {
+    return SliverFillRemaining(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              size: 64,
+              color: Colors.grey.shade400,
             ),
-          ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (widget.filter == TaskFilter.all ||
+                widget.filter == TaskFilter.today)
+              Text(
+                AppLocalizations.of(context)!.tapToAddTask,
+                style: TextStyle(
+                  color: Colors.grey.shade500,
+                  fontSize: 14,
+                ),
+              ),
+          ],
         ),
-      ],
+      ),
     );
+  }
+
+  void _toggleTaskCompletion(Task task) {
+    if (!task.isCompleted) {
+      setState(() {
+        _exitingTasks[task.id] = task;
+      });
+    }
+    ref.toggleCompleteWithUndo(
+      context,
+      task.id,
+      task.title,
+      task.isCompleted,
+    );
+  }
+
+  void _finishCompletionExit(String taskId) {
+    if (!mounted || !_exitingTasks.containsKey(taskId)) return;
+    setState(() {
+      _exitingTasks.remove(taskId);
+    });
   }
 
   void _showAddTaskDialog(BuildContext context, WidgetRef ref) async {
@@ -529,5 +614,62 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     return date.year == tomorrow.year &&
         date.month == tomorrow.month &&
         date.day == tomorrow.day;
+  }
+}
+
+class _CompletionExitTransition extends StatefulWidget {
+  const _CompletionExitTransition({
+    super.key,
+    required this.onFinished,
+    required this.child,
+  });
+
+  final VoidCallback onFinished;
+  final Widget child;
+
+  @override
+  State<_CompletionExitTransition> createState() =>
+      _CompletionExitTransitionState();
+}
+
+class _CompletionExitTransitionState extends State<_CompletionExitTransition>
+    with SingleTickerProviderStateMixin {
+  static const _duration = Duration(milliseconds: 180);
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: _duration, vsync: this);
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        widget.onFinished();
+      }
+    });
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final exit = ReverseAnimation(_animation);
+    return FadeTransition(
+      opacity: exit,
+      child: SizeTransition(
+        sizeFactor: exit,
+        alignment: Alignment.topCenter,
+        child: widget.child,
+      ),
+    );
   }
 }

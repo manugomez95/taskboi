@@ -303,7 +303,41 @@ final _pendingDeletionProvider = StateProvider<Set<String>>((ref) => {});
 // Holds IDs of tasks pending completion (for optimistic UI - prevents flicker from realtime sync)
 final _pendingCompletionProvider = StateProvider<Set<String>>((ref) => {});
 
-// Main tasks stream provider - reads from local DB, filters deleted and pending completion
+/// Applies the optimistic task mutations shared by every task-list view.
+///
+/// Pending deletions disappear immediately. Pending completions remain in the
+/// result as completed tasks so presentation code can move them between its
+/// incomplete and completed sections without a stale-data flash.
+List<Task> applyOptimisticTaskOverlay(
+  List<Task> tasks, {
+  required Set<String> pendingDeletion,
+  required Set<String> pendingCompletion,
+}) {
+  return tasks
+      .where((task) => !pendingDeletion.contains(task.id))
+      .map(
+        (task) => pendingCompletion.contains(task.id) && !task.isCompleted
+            ? task.copyWith(isCompleted: true)
+            : task,
+      )
+      .toList();
+}
+
+AsyncValue<List<Task>> _applyOptimisticTaskOverlay(
+  AsyncValue<List<Task>> tasks, {
+  required Set<String> pendingDeletion,
+  required Set<String> pendingCompletion,
+}) {
+  return tasks.whenData(
+    (value) => applyOptimisticTaskOverlay(
+      value,
+      pendingDeletion: pendingDeletion,
+      pendingCompletion: pendingCompletion,
+    ),
+  );
+}
+
+// Main tasks stream provider - reads from local DB and applies optimistic state.
 // Note: Sorting is applied per-view in the UI layer using taskSortNotifierProvider
 final tasksStreamProvider =
     Provider.family<AsyncValue<List<Task>>, String?>((ref, projectId) {
@@ -311,23 +345,11 @@ final tasksStreamProvider =
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localTasksStreamProvider(projectId));
 
-  return stream.whenData((tasks) {
-    return tasks.where((t) {
-      if (pendingDeletion.contains(t.id)) return false;
-      // If task is pending completion, treat it as completed for filtering
-      // This prevents flicker when realtime sync updates arrive
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) {
-        return false; // Hide from incomplete list - will show as completed
-      }
-      return true;
-    }).map((t) {
-      // If task is pending completion, show it as completed in the UI
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) {
-        return t.copyWith(isCompleted: true);
-      }
-      return t;
-    }).toList();
-  });
+  return _applyOptimisticTaskOverlay(
+    stream,
+    pendingDeletion: pendingDeletion,
+    pendingCompletion: pendingCompletion,
+  );
 });
 
 // Inbox tasks from local DB
@@ -349,19 +371,11 @@ final inboxTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
   final pendingDeletion = ref.watch(_pendingDeletionProvider);
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localInboxTasksStreamProvider);
-  return stream.whenData((tasks) {
-    return tasks.where((t) {
-      if (pendingDeletion.contains(t.id)) return false;
-      // Exclude tasks pending completion from incomplete list
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) return false;
-      return true;
-    }).map((t) {
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) {
-        return t.copyWith(isCompleted: true);
-      }
-      return t;
-    }).toList();
-  });
+  return _applyOptimisticTaskOverlay(
+    stream,
+    pendingDeletion: pendingDeletion,
+    pendingCompletion: pendingCompletion,
+  );
 });
 
 // Today's tasks from local DB
@@ -382,18 +396,11 @@ final todayTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
   final pendingDeletion = ref.watch(_pendingDeletionProvider);
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localTodayTasksStreamProvider);
-  return stream.whenData((tasks) {
-    return tasks.where((t) {
-      if (pendingDeletion.contains(t.id)) return false;
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) return false;
-      return true;
-    }).map((t) {
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) {
-        return t.copyWith(isCompleted: true);
-      }
-      return t;
-    }).toList();
-  });
+  return _applyOptimisticTaskOverlay(
+    stream,
+    pendingDeletion: pendingDeletion,
+    pendingCompletion: pendingCompletion,
+  );
 });
 
 // Upcoming tasks from local DB
@@ -414,18 +421,11 @@ final upcomingTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
   final pendingDeletion = ref.watch(_pendingDeletionProvider);
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localUpcomingTasksStreamProvider);
-  return stream.whenData((tasks) {
-    return tasks.where((t) {
-      if (pendingDeletion.contains(t.id)) return false;
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) return false;
-      return true;
-    }).map((t) {
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) {
-        return t.copyWith(isCompleted: true);
-      }
-      return t;
-    }).toList();
-  });
+  return _applyOptimisticTaskOverlay(
+    stream,
+    pendingDeletion: pendingDeletion,
+    pendingCompletion: pendingCompletion,
+  );
 });
 
 // Subtasks from local DB
@@ -455,15 +455,12 @@ final subtasksStreamProvider =
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localSubtasksStreamProvider(parentId));
   return stream.whenData((tasks) {
-    return tasks.where((t) {
-      if (pendingDeletion.contains(t.id)) return false;
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) return false;
-      return true;
-    }).map((t) {
-      if (pendingCompletion.contains(t.id) && !t.isCompleted) {
-        return t.copyWith(isCompleted: true);
+    return tasks.where((task) {
+      if (pendingDeletion.contains(task.id)) return false;
+      if (pendingCompletion.contains(task.id) && !task.isCompleted) {
+        return false;
       }
-      return t;
+      return true;
     }).toList();
   });
 });
