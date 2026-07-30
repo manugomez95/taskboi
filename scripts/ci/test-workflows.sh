@@ -14,17 +14,17 @@ if grep -E '(^|[[:space:]>/=])\.env([[:space:]/]|$)|(^|[^A-Z_])SUPABASE_URL=|(^|
   fail "legacy environment-file or define syntax is present"
 fi
 
-grep -F -- 'printf '\''%s\n'\'' '\''{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-ci-value"}'\'' > "$config_file"' "$CI" >/dev/null \
-  || fail "CI temporary config is missing or does not contain exactly the PUBLIC keys"
+grep -F -- 'printf '\''%s\n'\'' '\''{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-ci-value"}'\'' > "$config_file"' "$REPO_ROOT/scripts/ci/technical-health.sh" >/dev/null \
+  || fail "canonical Flutter test config is missing or does not contain exactly the PUBLIC keys"
 grep -F -- 'printf '\''%s\n'\'' '\''{"PUBLIC_SUPABASE_URL":"https://example.invalid","PUBLIC_SUPABASE_ANON_KEY":"inert-release-value"}'\'' > "$config_file"' "$RELEASE" >/dev/null \
   || fail "release temporary config is missing or does not contain exactly the PUBLIC keys"
 
-grep -F 'scripts/ci/secret-scan.sh history' "$CI" >/dev/null \
-  || fail "CI does not use the verified full-history gate"
-grep -F 'dart run build_runner build --delete-conflicting-outputs' "$CI" >/dev/null \
-  || fail "CI does not regenerate committed Flutter sources"
-grep -F 'scripts/ci/check-generated-output.sh' "$CI" >/dev/null \
-  || fail "CI does not reject generated tree drift"
+grep -F 'scripts/ci/technical-health.sh secret-scan' "$CI" >/dev/null \
+  || fail "CI does not invoke the canonical secret-scan component"
+grep -F 'dart run build_runner build --delete-conflicting-outputs' "$REPO_ROOT/scripts/ci/technical-health.sh" >/dev/null \
+  || fail "canonical command does not regenerate committed Flutter sources"
+grep -F '"$REPO_ROOT/scripts/ci/check-generated-output.sh"' "$REPO_ROOT/scripts/ci/technical-health.sh" >/dev/null \
+  || fail "canonical command does not reject generated tree drift"
 if grep -Eiq 'taskboi-mcp|cache-dependency-path:.*package-lock|npm (ci|pack|publish)' "$CI" "$RELEASE"; then
   fail "core workflows must not reference or package the separated MCP project"
 fi
@@ -33,14 +33,14 @@ if ! ruby -rpsych -e '
     workflow = Psych.safe_load(File.read(ARGV.fetch(0)), aliases: false)
     job = workflow.fetch("jobs").fetch("workflow-regression")
     steps = job.fetch("steps")
-    unless steps.is_a?(Array) && steps.any? { |step| step.is_a?(Hash) && step["run"] == "scripts/ci/test-workflows.sh" }
+    unless steps.is_a?(Array) && steps.any? { |step| step.is_a?(Hash) && step["run"] == "scripts/ci/technical-health.sh workflows" }
       exit 1
     end
   rescue Psych::Exception, KeyError, TypeError
     exit 1
   end
 ' "$CI"; then
-  fail "CI workflow-regression job must contain a run step that exactly executes scripts/ci/test-workflows.sh"
+  fail "CI workflow-regression job must invoke the canonical workflows component"
 fi
 grep -F 'scripts/ci/secret-scan.sh history' "$RELEASE" >/dev/null \
   || fail "release does not scan full history"
@@ -106,15 +106,20 @@ flutter_job="$(awk '
   in_flutter && /^  [A-Za-z0-9_-]+:$/ && $0 != "  flutter:" { exit }
   in_flutter { print }
 ' "$CI")"
-locked_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'flutter pub get --enforce-lockfile' | cut -d: -f1)"
-generate_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'dart run build_runner build --delete-conflicting-outputs' | cut -d: -f1)"
-drift_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/check-generated-output.sh' | cut -d: -f1)"
-analyze_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'flutter analyze' | cut -d: -f1)"
-test_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'flutter test --dart-define-from-file=' | cut -d: -f1)"
+locked_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-dependencies' | cut -d: -f1)"
+generate_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-generated' | cut -d: -f1)"
+format_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-format' | cut -d: -f1)"
+analyze_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-analyze' | cut -d: -f1)"
+test_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-test' | cut -d: -f1)"
 [[ -n "$locked_line" && "$locked_line" -lt "$generate_line" && \
-  "$generate_line" -lt "$drift_line" && "$drift_line" -lt "$analyze_line" && \
-  "$drift_line" -lt "$test_line" ]] \
-  || fail "Flutter generated-source checks must follow locked install and precede analyze/tests"
+  "$generate_line" -lt "$format_line" && "$format_line" -lt "$analyze_line" && \
+  "$analyze_line" -lt "$test_line" ]] \
+  || fail "Flutter technical-health components are missing or out of order"
+
+for component in backend-migrations backend-check backend-test; do
+  grep -F "scripts/ci/technical-health.sh $component" "$CI" >/dev/null \
+    || fail "CI does not invoke canonical component $component"
+done
 
 fixture_root="$(mktemp -d "${TMPDIR:-/tmp}/taskboi-ci-regression.XXXXXX")"
 trap 'rm -rf "$fixture_root"' EXIT
