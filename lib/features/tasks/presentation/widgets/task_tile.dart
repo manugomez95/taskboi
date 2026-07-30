@@ -15,76 +15,35 @@ import 'undo_snackbar.dart';
 class TaskTile extends ConsumerStatefulWidget {
   final Task task;
   final bool showProject;
+  final ValueChanged<Task>? onToggleComplete;
 
   const TaskTile({
     super.key,
     required this.task,
     this.showProject = false,
+    this.onToggleComplete,
   });
 
   @override
   ConsumerState<TaskTile> createState() => _TaskTileState();
 }
 
-class _TaskTileState extends ConsumerState<TaskTile>
-    with SingleTickerProviderStateMixin {
+class _TaskTileState extends ConsumerState<TaskTile> {
   final MenuController _menuController = MenuController();
   Offset _menuPosition = Offset.zero;
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
-  }
+  void _toggleCompletion() {
+    if (widget.task.isCompleted) {
+      HapticFeedback.selectionClick();
+    } else {
+      HapticFeedback.mediumImpact();
+    }
 
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleComplete() async {
-    // Haptic feedback for satisfaction
-    HapticFeedback.mediumImpact();
-
-    // Capture ScaffoldMessenger and task info BEFORE animation starts
-    // The context may become invalid after the fade animation completes
-    final messenger = ScaffoldMessenger.of(context);
-    final taskId = widget.task.id;
-    final taskTitle = widget.task.title;
-    final wasCompleted = widget.task.isCompleted;
-
-    // Start fade animation BEFORE marking pending completion
-    // (marking pending causes the task to be filtered out, which disposes this widget)
-    await _fadeController.forward();
-
-    if (!mounted) return;
-
-    // Now mark as pending completion and complete the task
-    // Use captured values since widget may be disposed after marking pending
-    final notifier = ref.read(tasksNotifierProvider.notifier);
-    notifier.markPendingCompletion(taskId);
-
-    ref.toggleCompleteWithUndo(
-      context,
-      taskId,
-      taskTitle,
-      wasCompleted,
-      messenger: messenger,
-    );
-  }
-
-  void _handleUncomplete() {
-    // Light haptic for uncomplete too
-    HapticFeedback.selectionClick();
+    final onToggleComplete = widget.onToggleComplete;
+    if (onToggleComplete != null) {
+      onToggleComplete(widget.task);
+      return;
+    }
 
     ref.toggleCompleteWithUndo(
       context,
@@ -361,25 +320,7 @@ class _TaskTileState extends ConsumerState<TaskTile>
         child: Text(task.isCompleted ? l10n.markIncomplete : l10n.markComplete),
         onPressed: () {
           _menuController.close();
-          // Haptic feedback for satisfaction
-          if (task.isCompleted) {
-            HapticFeedback.selectionClick();
-          } else {
-            HapticFeedback.mediumImpact();
-          }
-          // Use the same undo pattern as checkbox for consistency
-          if (!task.isCompleted) {
-            // Mark pending completion before completing
-            ref
-                .read(tasksNotifierProvider.notifier)
-                .markPendingCompletion(task.id);
-          }
-          ref.toggleCompleteWithUndo(
-            context,
-            task.id,
-            task.title,
-            task.isCompleted,
-          );
+          _toggleCompletion();
         },
       ),
       // Delete
@@ -468,117 +409,100 @@ class _TaskTileState extends ConsumerState<TaskTile>
     final completedSubtaskCount =
         subtasksAsync.valueOrNull?.where((t) => t.isCompleted).length ?? 0;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SizeTransition(
-        sizeFactor: _fadeAnimation,
-        alignment: Alignment.topCenter,
-        child: MenuAnchor(
-          controller: _menuController,
-          menuChildren: _buildMenuChildren(context),
-          alignmentOffset: _menuPosition,
-          child: GestureDetector(
-            // Use onSecondaryTapUp to open context menu on right-click release.
-            // This integrates with Flutter's gesture arena and avoids conflicts
-            // with ReorderableDelayedDragStartListener.
-            behavior: HitTestBehavior.translucent,
-            onSecondaryTapUp: (details) {
-              final RenderBox renderBox =
-                  context.findRenderObject() as RenderBox;
-              final localPosition =
-                  renderBox.globalToLocal(details.globalPosition);
-              setState(() {
-                _menuPosition = localPosition;
-              });
-              _menuController.open(position: localPosition);
-            },
-            child: InkWell(
-              onTap: _openDetailSheet,
-              // Long press is disabled to allow drag-and-drop reordering.
-              // Context menu: right-click on desktop, tap to open detail sheet on mobile.
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Checkbox
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: GestureDetector(
-                        onTap: () {
-                          if (task.isCompleted) {
-                            _handleUncomplete();
-                          } else {
-                            _handleComplete();
-                          }
-                        },
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: task.isCompleted
-                                  ? Colors.grey
-                                  : (task.priority > 0
-                                      ? priorityColor
-                                      : Colors.grey.shade400),
-                              width: 2,
-                            ),
-                            color:
-                                task.isCompleted ? Colors.grey.shade300 : null,
-                          ),
-                          child: task.isCompleted
-                              ? const Icon(Icons.check,
-                                  size: 14, color: Colors.white)
+    return MenuAnchor(
+      controller: _menuController,
+      menuChildren: _buildMenuChildren(context),
+      alignmentOffset: _menuPosition,
+      child: GestureDetector(
+        // Use onSecondaryTapUp to open context menu on right-click release.
+        // This integrates with Flutter's gesture arena and avoids conflicts
+        // with ReorderableDelayedDragStartListener.
+        behavior: HitTestBehavior.translucent,
+        onSecondaryTapUp: (details) {
+          final RenderBox renderBox = context.findRenderObject() as RenderBox;
+          final localPosition = renderBox.globalToLocal(details.globalPosition);
+          setState(() {
+            _menuPosition = localPosition;
+          });
+          _menuController.open(position: localPosition);
+        },
+        child: InkWell(
+          onTap: _openDetailSheet,
+          // Long press is disabled to allow drag-and-drop reordering.
+          // Context menu: right-click on desktop, tap to open detail sheet on mobile.
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Checkbox
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: GestureDetector(
+                    onTap: _toggleCompletion,
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: task.isCompleted
+                              ? Colors.grey
+                              : (task.priority > 0
+                                  ? priorityColor
+                                  : Colors.grey.shade400),
+                          width: 2,
+                        ),
+                        color: task.isCompleted ? Colors.grey.shade300 : null,
+                      ),
+                      child: task.isCompleted
+                          ? const Icon(Icons.check,
+                              size: 14, color: Colors.white)
+                          : null,
+                    ),
+                  ),
+                ),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Text(
+                        task.title,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          decoration: task.isCompleted
+                              ? TextDecoration.lineThrough
                               : null,
+                          color: task.isCompleted ? Colors.grey : null,
                         ),
                       ),
-                    ),
-                    // Content
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title
-                          Text(
-                            task.title,
-                            style: theme.textTheme.bodyMedium?.copyWith(
+                      // Description (1 line max)
+                      if (task.description != null &&
+                          task.description!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            task.description!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: task.isCompleted
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade600,
                               decoration: task.isCompleted
                                   ? TextDecoration.lineThrough
                                   : null,
-                              color: task.isCompleted ? Colors.grey : null,
                             ),
                           ),
-                          // Description (1 line max)
-                          if (task.description != null &&
-                              task.description!.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                task.description!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: task.isCompleted
-                                      ? Colors.grey.shade400
-                                      : Colors.grey.shade600,
-                                  decoration: task.isCompleted
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                ),
-                              ),
-                            ),
-                          // Metadata row
-                          _buildMetadataRow(context, task, isOverdue,
-                              subtaskCount, completedSubtaskCount),
-                        ],
-                      ),
-                    ),
-                  ],
+                        ),
+                      // Metadata row
+                      _buildMetadataRow(context, task, isOverdue, subtaskCount,
+                          completedSubtaskCount),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

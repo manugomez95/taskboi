@@ -20,16 +20,25 @@ class _ControlledTasksNotifier extends TasksNotifier {
       : super(_MockAppDatabase(), _MockSyncService(), null, _MockRef());
 
   final completion = Completer<void>();
+  var completeTaskCallCount = 0;
   var uncompleteTaskCallCount = 0;
+  var pendingCompletion = false;
 
   @override
-  void markPendingCompletion(String taskId) {}
+  void markPendingCompletion(String taskId) {
+    pendingCompletion = true;
+  }
 
   @override
-  void clearPendingCompletion(String taskId) {}
+  void clearPendingCompletion(String taskId) {
+    pendingCompletion = false;
+  }
 
   @override
-  Future<void> completeTask(String id) => completion.future;
+  Future<void> completeTask(String id) {
+    completeTaskCallCount++;
+    return completion.future;
+  }
 
   @override
   Future<void> uncompleteTask(String id) async {
@@ -130,6 +139,47 @@ void main() {
     expect(find.text('Undo'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 500));
   });
+
+  testWidgets(
+    'immediate undo wins when completion is still in flight',
+    (tester) async {
+      final notifier = _ControlledTasksNotifier();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            tasksNotifierProvider.overrideWith((ref) => notifier),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: Consumer(
+                builder: _MountedCompletionButton.new,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Complete'));
+      await tester.pump();
+
+      expect(notifier.completeTaskCallCount, 1);
+      expect(find.text('Undo'), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+      expect(notifier.pendingCompletion, isFalse);
+      expect(notifier.uncompleteTaskCallCount, 0);
+
+      notifier.completion.complete();
+      await tester.pump();
+
+      expect(notifier.uncompleteTaskCallCount, 1);
+      expect(notifier.pendingCompletion, isFalse);
+      await tester.pump(const Duration(milliseconds: 500));
+    },
+  );
 }
 
 class _MountedCompletionButton extends StatelessWidget {

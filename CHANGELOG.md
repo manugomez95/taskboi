@@ -23,6 +23,8 @@ after the first public release and resolution of all release blockers.
 
 ### Changed
 
+- Smoothed optimistic task completion and Undo transitions without resetting
+  task-list viewports or disrupting manual task ordering.
 - Moved the MCP server and Worker implementation to the separate canonical
   Taskboi MCP repository; this public core no longer packages or releases MCP
   artifacts.
