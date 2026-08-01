@@ -15,6 +15,24 @@ import '../../../core/utils/supabase_serialization.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../data/models/comment.dart';
 
+enum CommentCreationStatus { created, notCreated, attachmentsPending }
+
+class CommentCreationResult {
+  final CommentCreationStatus status;
+  final Comment? comment;
+
+  const CommentCreationResult._(this.status, this.comment);
+
+  const CommentCreationResult.created(Comment comment)
+      : this._(CommentCreationStatus.created, comment);
+
+  const CommentCreationResult.notCreated()
+      : this._(CommentCreationStatus.notCreated, null);
+
+  const CommentCreationResult.attachmentsPending(Comment comment)
+      : this._(CommentCreationStatus.attachmentsPending, comment);
+}
+
 // Stream from local Drift database - comments for a specific task
 final _localCommentsStreamProvider =
     StreamProvider.family<List<Comment>, String>((ref, taskId) {
@@ -136,15 +154,16 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
     return failures;
   }
 
-  Future<Comment?> createComment({
+  Future<CommentCreationResult> createComment({
     required String taskId,
     required String content,
     List<File> imageFiles = const [],
   }) async {
-    if (_userId == null) return null;
+    if (_userId == null) return const CommentCreationResult.notCreated();
 
     state = const AsyncValue.loading();
     var unattachedImageIds = <String>[];
+    Comment? createdComment;
     try {
       // Generate ID locally
       final id = const Uuid().v4();
@@ -174,11 +193,17 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       ));
 
       // Queue sync operation
-      await _syncService.queueCreate(
-        SyncEntityType.comment,
-        id,
-        comment.toJson(),
-      );
+      try {
+        await _syncService.queueCreate(
+          SyncEntityType.comment,
+          id,
+          comment.toJson(),
+        );
+      } catch (error, stackTrace) {
+        await _db.hardDeleteComment(id);
+        Error.throwWithStackTrace(error, stackTrace);
+      }
+      createdComment = comment;
 
       // A secure upload can only be bound to a comment that already exists on
       // the server. Plain comments retain the existing offline-first behavior.
@@ -213,7 +238,7 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       }
 
       state = const AsyncValue.data(null);
-      return comment.copyWith(images: imageIds);
+      return CommentCreationResult.created(comment.copyWith(images: imageIds));
     } catch (e, st) {
       final cleanupFailures =
           await _cleanupUnattachedImages(unattachedImageIds);
@@ -221,7 +246,59 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
           ? e
           : Exception('$e; cleanup failed for: ${cleanupFailures.join(', ')}');
       state = AsyncValue.error(reported, st);
-      return null;
+      return createdComment == null
+          ? const CommentCreationResult.notCreated()
+          : CommentCreationResult.attachmentsPending(createdComment);
+    }
+  }
+
+  Future<bool> retryCommentAttachments({
+    required String commentId,
+    required List<File> imageFiles,
+  }) async {
+    state = const AsyncValue.loading();
+    var unattachedImageIds = <String>[];
+    try {
+      await _syncService.processPendingOperations();
+      final remoteComment = await _supabase
+          .from('comments')
+          .select('id')
+          .eq('id', commentId)
+          .maybeSingle();
+      if (remoteComment == null) {
+        throw Exception('Comment is not synced');
+      }
+
+      final imageIds = await uploadImages(imageFiles, commentId);
+      unattachedImageIds = imageIds;
+      final now = DateTime.now();
+      await (_db.update(_db.comments)..where((c) => c.id.equals(commentId)))
+          .write(
+        CommentsCompanion(
+          images: Value(jsonEncode(imageIds)),
+          updatedAt: Value(now),
+          isPendingSync: const Value(true),
+        ),
+      );
+      await _syncService.queueUpdate(SyncEntityType.comment, commentId, {
+        'id': commentId,
+        'images': imageIds,
+        'updated_at': utcIso(now),
+      });
+      await _syncService.processPendingOperations();
+      unattachedImageIds = const [];
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (error, stackTrace) {
+      final cleanupFailures =
+          await _cleanupUnattachedImages(unattachedImageIds);
+      final reported = cleanupFailures.isEmpty
+          ? error
+          : Exception(
+              '$error; cleanup failed for: ${cleanupFailures.join(', ')}',
+            );
+      state = AsyncValue.error(reported, stackTrace);
+      return false;
     }
   }
 

@@ -1064,6 +1064,24 @@ abstract class AppLocalizations {
   /// **'Add a comment...'**
   String get addComment;
 
+  /// No description provided for @commentCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the comment. Please try again.'**
+  String get commentCreateFailed;
+
+  /// No description provided for @commentAttachmentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The comment was added, but its images couldn\'t be uploaded. Try again to finish adding them.'**
+  String get commentAttachmentFailed;
+
+  /// No description provided for @imagePickerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the image picker. Please try again.'**
+  String get imagePickerFailed;
+
   /// No description provided for @editComment.
   ///
   /// In en, this message translates to:

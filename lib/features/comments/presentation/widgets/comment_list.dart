@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,26 @@ import 'package:intl/intl.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/models/comment.dart';
 import '../../providers/comments_provider.dart';
+
+typedef CommentImagePicker = Future<XFile?> Function(ImageSource source);
+typedef CommentCreator = Future<CommentCreationResult> Function({
+  required String taskId,
+  required String content,
+  required List<File> imageFiles,
+});
+typedef CommentAttachmentRetrier = Future<bool> Function({
+  required String commentId,
+  required List<File> imageFiles,
+});
+
+@visibleForTesting
+List<ImageSource> commentImageSources(TargetPlatform platform) => const {
+      TargetPlatform.macOS,
+      TargetPlatform.linux,
+      TargetPlatform.windows,
+    }.contains(platform)
+        ? const [ImageSource.gallery]
+        : const [ImageSource.camera, ImageSource.gallery];
 
 class CommentList extends ConsumerWidget {
   final String taskId;
@@ -635,10 +656,18 @@ class _EditImagesPreview extends StatelessWidget {
 
 class AddCommentField extends ConsumerStatefulWidget {
   final String taskId;
+  final CommentImagePicker? imagePicker;
+  final CommentCreator? commentCreator;
+  final CommentAttachmentRetrier? attachmentRetrier;
+  final TargetPlatform? platform;
 
   const AddCommentField({
     super.key,
     required this.taskId,
+    @visibleForTesting this.imagePicker,
+    @visibleForTesting this.commentCreator,
+    @visibleForTesting this.attachmentRetrier,
+    @visibleForTesting this.platform,
   });
 
   @override
@@ -651,6 +680,7 @@ class _AddCommentFieldState extends ConsumerState<AddCommentField> {
   final _imagePicker = ImagePicker();
   bool _isSubmitting = false;
   List<File> _pickedImages = [];
+  String? _pendingAttachmentCommentId;
 
   @override
   void dispose() {
@@ -661,20 +691,34 @@ class _AddCommentFieldState extends ConsumerState<AddCommentField> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
+      final image = await (widget.imagePicker?.call(source) ??
+          _imagePicker.pickImage(
+            source: source,
+            maxWidth: 1920,
+            maxHeight: 1920,
+            imageQuality: 85,
+          ));
       if (image != null) {
+        if (!mounted) return;
         setState(() {
           _pickedImages.add(File(image.path));
         });
       }
     } catch (_) {
-      // User cancelled or permission denied
+      if (!mounted) return;
+      _showError(AppLocalizations.of(context)!.imagePickerFailed);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   void _showImageSourcePicker() {
@@ -688,14 +732,17 @@ class _AddCommentFieldState extends ConsumerState<AddCommentField> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined, size: 20),
-              title: Text(l10n.camera),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
-            ),
+            if (commentImageSources(
+              widget.platform ?? defaultTargetPlatform,
+            ).contains(ImageSource.camera))
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined, size: 20),
+                title: Text(l10n.camera),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined, size: 20),
               title: Text(l10n.gallery),
@@ -725,18 +772,60 @@ class _AddCommentFieldState extends ConsumerState<AddCommentField> {
 
     final imagesToSend = List<File>.from(_pickedImages);
 
-    await ref.read(commentsNotifierProvider.notifier).createComment(
-          taskId: widget.taskId,
-          content: content,
-          imageFiles: imagesToSend,
-        );
+    try {
+      final pendingCommentId = _pendingAttachmentCommentId;
+      if (pendingCommentId != null) {
+        final succeeded = await (widget.attachmentRetrier?.call(
+              commentId: pendingCommentId,
+              imageFiles: imagesToSend,
+            ) ??
+            ref.read(commentsNotifierProvider.notifier).retryCommentAttachments(
+                  commentId: pendingCommentId,
+                  imageFiles: imagesToSend,
+                ));
+        if (!mounted) return;
+        if (!succeeded) {
+          _showError(AppLocalizations.of(context)!.commentAttachmentFailed);
+          return;
+        }
+        setState(() {
+          _pendingAttachmentCommentId = null;
+          _pickedImages = [];
+        });
+        return;
+      }
 
-    _controller.clear();
-    _focusNode.unfocus();
-    setState(() {
-      _isSubmitting = false;
-      _pickedImages = [];
-    });
+      final result = await (widget.commentCreator?.call(
+            taskId: widget.taskId,
+            content: content,
+            imageFiles: imagesToSend,
+          ) ??
+          ref.read(commentsNotifierProvider.notifier).createComment(
+                taskId: widget.taskId,
+                content: content,
+                imageFiles: imagesToSend,
+              ));
+      if (!mounted) return;
+      if (result.status == CommentCreationStatus.notCreated) {
+        _showError(AppLocalizations.of(context)!.commentCreateFailed);
+        return;
+      }
+
+      _controller.clear();
+      _focusNode.unfocus();
+      if (result.status == CommentCreationStatus.attachmentsPending) {
+        setState(() => _pendingAttachmentCommentId = result.comment!.id);
+        _showError(AppLocalizations.of(context)!.commentAttachmentFailed);
+      } else {
+        setState(() => _pickedImages = []);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showError(AppLocalizations.of(context)!.commentCreateFailed);
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override

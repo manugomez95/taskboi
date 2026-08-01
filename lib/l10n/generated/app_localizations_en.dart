@@ -536,6 +536,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addComment => 'Add a comment...';
 
   @override
+  String get commentCreateFailed =>
+      'Couldn\'t add the comment. Please try again.';
+
+  @override
+  String get commentAttachmentFailed =>
+      'The comment was added, but its images couldn\'t be uploaded. Try again to finish adding them.';
+
+  @override
+  String get imagePickerFailed =>
+      'Couldn\'t open the image picker. Please try again.';
+
+  @override
   String get editComment => 'Edit comment...';
 
   @override
