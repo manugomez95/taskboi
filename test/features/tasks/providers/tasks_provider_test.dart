@@ -28,6 +28,23 @@ void main() {
         ['untimed', 'no-date', 'later', 'earlier']);
   });
 
+  test('applySorting preserves caller objects, duplicate IDs, and stable ties',
+      () {
+    Task task(String title) => Task(
+          id: 'same-id',
+          projectId: 'project-id',
+          userId: 'user-id',
+          title: title,
+        );
+    final first = task('same');
+    final second = task('same');
+
+    final result = applySorting([first, second], TaskSortOption.title);
+
+    expect(result[0], same(first));
+    expect(result[1], same(second));
+  });
+
   group('applyOptimisticTaskOverlay', () {
     Task task(String id, {bool isCompleted = false}) => Task(
           id: id,

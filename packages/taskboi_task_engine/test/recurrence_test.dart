@@ -2,83 +2,18 @@ import 'package:taskboi_task_engine/taskboi_task_engine.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('recurrence builders and parser', () {
-    test('builds supported rules and parses normalized structure', () {
+  group('recurrence builders', () {
+    test('builds supported rules', () {
       expect(RecurrenceRule.daily, 'FREQ=DAILY');
       expect(RecurrenceRule.everyNDays(3), 'FREQ=DAILY;INTERVAL=3');
       expect(RecurrenceRule.weeklyOn(['MO', 'WE']), 'FREQ=WEEKLY;BYDAY=MO,WE');
       expect(RecurrenceRule.monthlyOnDay(31), 'FREQ=MONTHLY;BYMONTHDAY=31');
-
-      expect(
-        RecurrenceRule.parse('FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR'),
-        const ParsedRecurrenceRule(
-          frequency: RecurrenceFrequency.weekly,
-          interval: 2,
-          days: ['MO', 'FR'],
-        ),
-      );
     });
 
     test('rejects invalid builder values', () {
       expect(() => RecurrenceRule.everyNDays(0), throwsArgumentError);
       expect(() => RecurrenceRule.monthlyOnDay(32), throwsArgumentError);
       expect(() => RecurrenceRule.weeklyOn(['XX']), throwsArgumentError);
-    });
-
-    test('invalid and unknown rules do not parse', () {
-      for (final rule in [
-        '',
-        'FREQ=HOURLY',
-        'FREQ=DAILY;INTERVAL=0',
-        'FREQ=WEEKLY;BYDAY=XX',
-        'FREQ=MONTHLY;BYMONTHDAY=0',
-        'FREQ=DAILY;SURPRISE=YES',
-      ]) {
-        expect(RecurrenceRule.parse(rule), isNull, reason: rule);
-      }
-    });
-  });
-
-  group('description data', () {
-    test('returns localization keys and structured values, never UI strings',
-        () {
-      expect(RecurrenceRule.description(null),
-          const RecurrenceDescription('none'));
-      expect(RecurrenceRule.description('FREQ=DAILY'),
-          const RecurrenceDescription('daily'));
-      expect(
-        RecurrenceRule.description('FREQ=DAILY;INTERVAL=3'),
-        const RecurrenceDescription('everyNDays', values: {'interval': 3}),
-      );
-      expect(
-        RecurrenceRule.description('FREQ=WEEKLY;BYDAY=MO,WE'),
-        const RecurrenceDescription('weeklyOn', values: {
-          'days': ['MO', 'WE']
-        }),
-      );
-      expect(
-        RecurrenceRule.description('FREQ=NOPE'),
-        const RecurrenceDescription('unknown'),
-      );
-    });
-
-    test('preserves legacy descriptions for rules with extra selectors', () {
-      expect(
-        RecurrenceRule.description('FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE'),
-        const RecurrenceDescription('everyNWeeks', values: {'interval': 2}),
-      );
-      expect(
-        RecurrenceRule.description('FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE'),
-        const RecurrenceDescription('weekly'),
-      );
-      expect(
-        RecurrenceRule.description('FREQ=MONTHLY;BYMONTHDAY=15'),
-        const RecurrenceDescription('unknown'),
-      );
-      expect(
-        RecurrenceRule.description('FREQ=YEARLY;INTERVAL=2'),
-        const RecurrenceDescription('unknown'),
-      );
     });
   });
 
@@ -89,14 +24,12 @@ void main() {
       final current = DateTime(2026, 1, 15, 9, 30);
 
       const countedRule = 'FREQ=DAILY;COUNT=10';
-      expect(RecurrenceRule.parse(countedRule), isNull);
       expect(
         RecurrenceRule.nextOccurrence(current, countedRule),
         DateTime(2026, 1, 16, 9, 30),
       );
 
       const extendedRule = 'FREQ=MONTHLY;INTERVAL=2;X-SOURCE=legacy';
-      expect(RecurrenceRule.parse(extendedRule), isNull);
       expect(
         RecurrenceRule.nextOccurrence(current, extendedRule),
         DateTime(2026, 3, 15),

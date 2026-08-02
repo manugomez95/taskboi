@@ -234,24 +234,26 @@ final startupTaskPreferencesProvider = FutureProvider<void>((ref) async {
 
 /// Applies sorting to a list of tasks based on the selected sort option
 List<Task> applySorting(List<Task> tasks, TaskSortOption sortOption) {
-  final byId = {for (final task in tasks) task.id: task};
-  final domainTasks = tasks
-      .map((task) => engine.Task(
-            id: task.id,
-            projectId: task.projectId,
-            userId: task.userId,
-            title: task.title,
-            dueDate: task.dueDate,
-            dueTime: task.dueTime,
-            priority: task.priority,
-            sortOrder: task.sortOrder,
-            createdAt: task.createdAt,
-          ))
-      .toList();
-  return engine
-      .sortTasks(domainTasks, sortOption)
-      .map((task) => byId[task.id]!)
-      .toList();
+  final indexed = [
+    for (var index = 0; index < tasks.length; index++)
+      (
+        index: index,
+        task: tasks[index],
+        key: engine.TaskSortKey(
+          title: tasks[index].title,
+          dueDate: tasks[index].dueDate,
+          dueTime: tasks[index].dueTime,
+          priority: tasks[index].priority,
+          sortOrder: tasks[index].sortOrder,
+          createdAt: tasks[index].createdAt,
+        ),
+      ),
+  ];
+  indexed.sort((a, b) {
+    final comparison = engine.compareTaskSortKeys(a.key, b.key, sortOption);
+    return comparison == 0 ? a.index.compareTo(b.index) : comparison;
+  });
+  return [for (final entry in indexed) entry.task];
 }
 
 // Stream from local Drift database - tasks for a specific project
