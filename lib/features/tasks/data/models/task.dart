@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart' as engine;
 
 import '../../../../core/utils/supabase_serialization.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -39,218 +40,99 @@ class Task with _$Task {
 
 /// Recurrence rule builder for common patterns
 class RecurrenceRule {
-  static const String daily = 'FREQ=DAILY';
-  static const String weekly = 'FREQ=WEEKLY';
-  static const String monthly = 'FREQ=MONTHLY';
-  static const String yearly = 'FREQ=YEARLY';
+  static const String daily = engine.RecurrenceRule.daily;
+  static const String weekly = engine.RecurrenceRule.weekly;
+  static const String monthly = engine.RecurrenceRule.monthly;
+  static const String yearly = engine.RecurrenceRule.yearly;
 
   static String weeklyOn(List<String> days) {
-    return 'FREQ=WEEKLY;BYDAY=${days.join(',')}';
+    return engine.RecurrenceRule.weeklyOn(days);
   }
 
   static String monthlyOnDay(int day) {
-    return 'FREQ=MONTHLY;BYMONTHDAY=$day';
+    return engine.RecurrenceRule.monthlyOnDay(day);
   }
 
   static String everyNDays(int n) {
-    return 'FREQ=DAILY;INTERVAL=$n';
+    return engine.RecurrenceRule.everyNDays(n);
   }
 
   static String everyNWeeks(int n) {
-    return 'FREQ=WEEKLY;INTERVAL=$n';
+    return engine.RecurrenceRule.everyNWeeks(n);
   }
 
   static String everyNMonths(int n) {
-    return 'FREQ=MONTHLY;INTERVAL=$n';
+    return engine.RecurrenceRule.everyNMonths(n);
   }
 
   /// Parse a recurrence rule and return a human-readable description
   static String describe(String? rule) {
-    if (rule == null) return '';
-
-    if (rule == daily) return 'Daily';
-    if (rule == weekly) return 'Weekly';
-    if (rule == monthly) return 'Monthly';
-    if (rule == yearly) return 'Yearly';
-
-    if (rule.contains('INTERVAL=')) {
-      final intervalMatch = RegExp(r'INTERVAL=(\d+)').firstMatch(rule);
-      final interval = int.tryParse(intervalMatch?.group(1) ?? '1') ?? 1;
-
-      if (rule.contains('FREQ=DAILY')) {
-        return interval == 1 ? 'Daily' : 'Every $interval days';
-      }
-      if (rule.contains('FREQ=WEEKLY')) {
-        return interval == 1 ? 'Weekly' : 'Every $interval weeks';
-      }
-      if (rule.contains('FREQ=MONTHLY')) {
-        return interval == 1 ? 'Monthly' : 'Every $interval months';
-      }
-    }
-
-    if (rule.contains('BYDAY=')) {
-      final daysMatch = RegExp(r'BYDAY=([A-Z,]+)').firstMatch(rule);
-      final days = daysMatch?.group(1)?.split(',') ?? [];
-      final dayNames = days.map((d) {
-        switch (d) {
-          case 'MO':
-            return 'Mon';
-          case 'TU':
-            return 'Tue';
-          case 'WE':
-            return 'Wed';
-          case 'TH':
-            return 'Thu';
-          case 'FR':
-            return 'Fri';
-          case 'SA':
-            return 'Sat';
-          case 'SU':
-            return 'Sun';
-          default:
-            return d;
-        }
-      }).toList();
-      return 'Weekly on ${dayNames.join(', ')}';
-    }
-
-    return 'Recurring';
+    final description = engine.RecurrenceRule.description(rule);
+    final interval = description.values['interval'];
+    return switch (description.key) {
+      'none' => '',
+      'daily' => 'Daily',
+      'weekly' => 'Weekly',
+      'monthly' => 'Monthly',
+      'yearly' => 'Yearly',
+      'everyNDays' => 'Every $interval days',
+      'everyNWeeks' => 'Every $interval weeks',
+      'everyNMonths' => 'Every $interval months',
+      'weeklyOn' =>
+        'Weekly on ${_englishDays(description.values['days']! as List<String>).join(', ')}',
+      _ => 'Recurring',
+    };
   }
 
   /// Parse a recurrence rule and return a localized human-readable description
   static String describeWithL10n(String? rule, AppLocalizations l10n) {
-    if (rule == null) return '';
-
-    if (rule == daily) return l10n.recurrenceDaily;
-    if (rule == weekly) return l10n.recurrenceWeekly;
-    if (rule == monthly) return l10n.recurrenceMonthly;
-    if (rule == yearly) return l10n.recurrenceYearly;
-
-    if (rule.contains('INTERVAL=')) {
-      final intervalMatch = RegExp(r'INTERVAL=(\d+)').firstMatch(rule);
-      final interval = int.tryParse(intervalMatch?.group(1) ?? '1') ?? 1;
-
-      if (rule.contains('FREQ=DAILY')) {
-        return interval == 1
-            ? l10n.recurrenceDaily
-            : l10n.recurrenceEveryNDays(interval);
-      }
-      if (rule.contains('FREQ=WEEKLY')) {
-        return interval == 1
-            ? l10n.recurrenceWeekly
-            : l10n.recurrenceEveryNWeeks(interval);
-      }
-      if (rule.contains('FREQ=MONTHLY')) {
-        return interval == 1
-            ? l10n.recurrenceMonthly
-            : l10n.recurrenceEveryNMonths(interval);
-      }
-    }
-
-    if (rule.contains('BYDAY=')) {
-      final daysMatch = RegExp(r'BYDAY=([A-Z,]+)').firstMatch(rule);
-      final days = daysMatch?.group(1)?.split(',') ?? [];
-      final dayNames = days.map((d) {
-        switch (d) {
-          case 'MO':
-            return l10n.dayMon;
-          case 'TU':
-            return l10n.dayTue;
-          case 'WE':
-            return l10n.dayWed;
-          case 'TH':
-            return l10n.dayThu;
-          case 'FR':
-            return l10n.dayFri;
-          case 'SA':
-            return l10n.daySat;
-          case 'SU':
-            return l10n.daySun;
-          default:
-            return d;
-        }
-      }).toList();
-      return l10n.recurrenceWeeklyOn(dayNames.join(', '));
-    }
-
-    return l10n.recurring;
+    final description = engine.RecurrenceRule.description(rule);
+    final interval = description.values['interval'] as int?;
+    return switch (description.key) {
+      'none' => '',
+      'daily' => l10n.recurrenceDaily,
+      'weekly' => l10n.recurrenceWeekly,
+      'monthly' => l10n.recurrenceMonthly,
+      'yearly' => l10n.recurrenceYearly,
+      'everyNDays' => l10n.recurrenceEveryNDays(interval!),
+      'everyNWeeks' => l10n.recurrenceEveryNWeeks(interval!),
+      'everyNMonths' => l10n.recurrenceEveryNMonths(interval!),
+      'weeklyOn' => l10n.recurrenceWeeklyOn(
+          _localizedDays(description.values['days']! as List<String>, l10n)
+              .join(', '),
+        ),
+      _ => l10n.recurring,
+    };
   }
 
   /// Calculate the next occurrence date based on the rule
   static DateTime? getNextOccurrence(DateTime current, String rule) {
-    if (rule.contains('FREQ=DAILY')) {
-      final interval = _getInterval(rule);
-      return current.add(Duration(days: interval));
-    }
-
-    if (rule.contains('FREQ=WEEKLY')) {
-      final interval = _getInterval(rule);
-      if (rule.contains('BYDAY=')) {
-        // Parse BYDAY value (e.g., "MO,TU,WE,TH,FR")
-        final byDayMatch = RegExp(r'BYDAY=([A-Z,]+)').firstMatch(rule);
-        if (byDayMatch != null) {
-          final days = byDayMatch.group(1)!.split(',');
-          const dayMap = {
-            'SU': DateTime.sunday, // 7
-            'MO': DateTime.monday, // 1
-            'TU': DateTime.tuesday, // 2
-            'WE': DateTime.wednesday, // 3
-            'TH': DateTime.thursday, // 4
-            'FR': DateTime.friday, // 5
-            'SA': DateTime.saturday, // 6
-          };
-
-          final currentDayIndex = current.weekday; // 1=Monday, 7=Sunday
-          final targetDays =
-              days.map((d) => dayMap[d]).whereType<int>().toList()..sort();
-
-          if (targetDays.isEmpty) {
-            return current.add(Duration(days: 7 * interval));
-          }
-
-          // Find the next occurrence
-          // First, check if there's a target day later this week
-          for (final targetDay in targetDays) {
-            if (targetDay > currentDayIndex) {
-              return current.add(Duration(days: targetDay - currentDayIndex));
-            }
-          }
-
-          // No target day found later this week, go to next week's first target day
-          // Days until end of week + days to first target
-          final daysUntilEndOfWeek = 7 - currentDayIndex;
-          final daysToFirstTarget = targetDays.first;
-          return current
-              .add(Duration(days: daysUntilEndOfWeek + daysToFirstTarget));
-        }
-        return current.add(Duration(days: 7 * interval));
-      }
-      return current.add(Duration(days: 7 * interval));
-    }
-
-    if (rule.contains('FREQ=MONTHLY')) {
-      final interval = _getInterval(rule);
-      return DateTime(
-        current.year,
-        current.month + interval,
-        current.day,
-      );
-    }
-
-    if (rule.contains('FREQ=YEARLY')) {
-      final interval = _getInterval(rule);
-      return DateTime(
-        current.year + interval,
-        current.month,
-        current.day,
-      );
-    }
-
-    return null;
+    return engine.RecurrenceRule.nextOccurrence(current, rule);
   }
 
-  static int _getInterval(String rule) {
-    final match = RegExp(r'INTERVAL=(\d+)').firstMatch(rule);
-    return int.tryParse(match?.group(1) ?? '1') ?? 1;
+  static List<String> _englishDays(List<String> days) {
+    const names = {
+      'MO': 'Mon',
+      'TU': 'Tue',
+      'WE': 'Wed',
+      'TH': 'Thu',
+      'FR': 'Fri',
+      'SA': 'Sat',
+      'SU': 'Sun'
+    };
+    return days.map((day) => names[day] ?? day).toList();
+  }
+
+  static List<String> _localizedDays(List<String> days, AppLocalizations l10n) {
+    final names = {
+      'MO': l10n.dayMon,
+      'TU': l10n.dayTue,
+      'WE': l10n.dayWed,
+      'TH': l10n.dayThu,
+      'FR': l10n.dayFri,
+      'SA': l10n.daySat,
+      'SU': l10n.daySun
+    };
+    return days.map((day) => names[day] ?? day).toList();
   }
 }

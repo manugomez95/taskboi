@@ -111,9 +111,10 @@ generate_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical
 format_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-format' | cut -d: -f1)"
 analyze_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-analyze' | cut -d: -f1)"
 test_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-test' | cut -d: -f1)"
+task_engine_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh task-engine' | cut -d: -f1 || true)"
 [[ -n "$locked_line" && "$locked_line" -lt "$generate_line" && \
   "$generate_line" -lt "$format_line" && "$format_line" -lt "$analyze_line" && \
-  "$analyze_line" -lt "$test_line" ]] \
+  "$analyze_line" -lt "$test_line" && "$test_line" -lt "$task_engine_line" ]] \
   || fail "Flutter technical-health components are missing or out of order"
 
 for component in backend-migrations backend-check backend-test; do

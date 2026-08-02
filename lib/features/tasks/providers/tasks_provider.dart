@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart' as engine;
 
 import '../../../core/database/database.dart' hide Task;
 import '../../../core/database/model_converters.dart';
@@ -233,47 +234,24 @@ final startupTaskPreferencesProvider = FutureProvider<void>((ref) async {
 
 /// Applies sorting to a list of tasks based on the selected sort option
 List<Task> applySorting(List<Task> tasks, TaskSortOption sortOption) {
-  final sorted = List<Task>.from(tasks);
-
-  switch (sortOption) {
-    case TaskSortOption.manual:
-      sorted.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-      break;
-    case TaskSortOption.priority:
-      // Higher priority (4=urgent) comes first
-      sorted.sort((a, b) => b.priority.compareTo(a.priority));
-      break;
-    case TaskSortOption.dueDate:
-      // Tasks with due dates come first, sorted by date then time
-      sorted.sort((a, b) {
-        if (a.dueDate == null && b.dueDate == null) return 0;
-        if (a.dueDate == null) return 1;
-        if (b.dueDate == null) return -1;
-        final dateCompare = a.dueDate!.compareTo(b.dueDate!);
-        if (dateCompare != 0) return dateCompare;
-        // Same date: compare by time (tasks with no time sort after tasks with time)
-        if (a.dueTime == null && b.dueTime == null) return 0;
-        if (a.dueTime == null) return 1;
-        if (b.dueTime == null) return -1;
-        return a.dueTime!.compareTo(b.dueTime!);
-      });
-      break;
-    case TaskSortOption.title:
-      sorted.sort(
-          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
-      break;
-    case TaskSortOption.createdAt:
-      // Newest first
-      sorted.sort((a, b) {
-        if (a.createdAt == null && b.createdAt == null) return 0;
-        if (a.createdAt == null) return 1;
-        if (b.createdAt == null) return -1;
-        return b.createdAt!.compareTo(a.createdAt!);
-      });
-      break;
-  }
-
-  return sorted;
+  final byId = {for (final task in tasks) task.id: task};
+  final domainTasks = tasks
+      .map((task) => engine.Task(
+            id: task.id,
+            projectId: task.projectId,
+            userId: task.userId,
+            title: task.title,
+            dueDate: task.dueDate,
+            dueTime: task.dueTime,
+            priority: task.priority,
+            sortOrder: task.sortOrder,
+            createdAt: task.createdAt,
+          ))
+      .toList();
+  return engine
+      .sortTasks(domainTasks, sortOption)
+      .map((task) => byId[task.id]!)
+      .toList();
 }
 
 // Stream from local Drift database - tasks for a specific project
@@ -823,18 +801,14 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     required String recurrenceParentId,
     required DateTime dueDate,
   }) {
-    final occurrenceDate = _dateKey(dueDate);
-    return const Uuid().v5(
-      Namespace.url.value,
-      'taskboi:recurring-occurrence:v1:$recurrenceParentId:$occurrenceDate',
+    return engine.recurringOccurrenceId(
+      recurrenceParentId: recurrenceParentId,
+      occurrenceDate: dueDate,
+      generateId: (material) => const Uuid().v5(
+        Namespace.url.value,
+        material,
+      ),
     );
-  }
-
-  String _dateKey(DateTime date) {
-    final year = date.year.toString().padLeft(4, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '$year-$month-$day';
   }
 
   Future<void> uncompleteTask(String id) async {

@@ -3,6 +3,31 @@ import 'package:taskboi/features/tasks/data/models/task.dart';
 import 'package:taskboi/features/tasks/providers/tasks_provider.dart';
 
 void main() {
+  test('applySorting preserves engine due-date and time ordering', () {
+    final date = DateTime(2026, 8, 2);
+    Task task(String id, {DateTime? dueDate, String? dueTime}) => Task(
+          id: id,
+          projectId: 'project-id',
+          userId: 'user-id',
+          title: id,
+          dueDate: dueDate,
+          dueTime: dueTime,
+        );
+    final tasks = [
+      task('untimed', dueDate: date),
+      task('no-date', dueTime: '08:00'),
+      task('later', dueDate: date, dueTime: '15:30'),
+      task('earlier', dueDate: date, dueTime: '09:00'),
+    ];
+
+    expect(
+      applySorting(tasks, TaskSortOption.dueDate).map((task) => task.id),
+      ['earlier', 'later', 'untimed', 'no-date'],
+    );
+    expect(tasks.map((task) => task.id),
+        ['untimed', 'no-date', 'later', 'earlier']);
+  });
+
   group('applyOptimisticTaskOverlay', () {
     Task task(String id, {bool isCompleted = false}) => Task(
           id: id,
