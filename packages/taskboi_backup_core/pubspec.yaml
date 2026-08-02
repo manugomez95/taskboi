@@ -1,0 +1,11 @@
+name: taskboi_backup_core
+description: Framework-free Taskboi backup archive codec and validation.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.6.2
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.25.8
