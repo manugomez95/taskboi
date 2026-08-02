@@ -54,9 +54,8 @@ abstract final class RecurrenceDescriptor {
     if (!const {'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'}.contains(frequency)) {
       return _unknown;
     }
-    final interval = values['INTERVAL'] == null
-        ? 1
-        : int.tryParse(values['INTERVAL']!);
+    final interval =
+        values['INTERVAL'] == null ? 1 : int.tryParse(values['INTERVAL']!);
     final days = values['BYDAY']?.split(',') ?? const <String>[];
     final monthDay = values['BYMONTHDAY'] == null
         ? null
@@ -200,9 +199,8 @@ abstract final class RecurrenceRule {
       _ => null,
     };
     if (frequency == null) return null;
-    final interval = values['INTERVAL'] == null
-        ? 1
-        : int.tryParse(values['INTERVAL']!);
+    final interval =
+        values['INTERVAL'] == null ? 1 : int.tryParse(values['INTERVAL']!);
     if (interval == null || interval < 1) return null;
     final days = values['BYDAY']?.split(',') ?? const <String>[];
     if (days.any((day) => !_validDays.contains(day)) ||
@@ -225,13 +223,13 @@ abstract final class RecurrenceRule {
   }
 
   static int _weekday(String day) => switch (day) {
-    'MO' => DateTime.monday,
-    'TU' => DateTime.tuesday,
-    'WE' => DateTime.wednesday,
-    'TH' => DateTime.thursday,
-    'FR' => DateTime.friday,
-    'SA' => DateTime.saturday,
-    'SU' => DateTime.sunday,
-    _ => throw StateError('Validated weekday expected'),
-  };
+        'MO' => DateTime.monday,
+        'TU' => DateTime.tuesday,
+        'WE' => DateTime.wednesday,
+        'TH' => DateTime.thursday,
+        'FR' => DateTime.friday,
+        'SA' => DateTime.saturday,
+        'SU' => DateTime.sunday,
+        _ => throw StateError('Validated weekday expected'),
+      };
 }
