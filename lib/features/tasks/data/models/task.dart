@@ -67,39 +67,35 @@ class RecurrenceRule {
 
   /// Parse a recurrence rule and return a human-readable description
   static String describe(String? rule) {
-    final description = engine.RecurrenceRule.description(rule);
-    final interval = description.values['interval'];
+    final description = _description(rule);
     return switch (description.key) {
       'none' => '',
       'daily' => 'Daily',
       'weekly' => 'Weekly',
       'monthly' => 'Monthly',
       'yearly' => 'Yearly',
-      'everyNDays' => 'Every $interval days',
-      'everyNWeeks' => 'Every $interval weeks',
-      'everyNMonths' => 'Every $interval months',
-      'weeklyOn' =>
-        'Weekly on ${_englishDays(description.values['days']! as List<String>).join(', ')}',
+      'everyNDays' => 'Every ${description.interval} days',
+      'everyNWeeks' => 'Every ${description.interval} weeks',
+      'everyNMonths' => 'Every ${description.interval} months',
+      'weeklyOn' => 'Weekly on ${_englishDays(description.days).join(', ')}',
       _ => 'Recurring',
     };
   }
 
   /// Parse a recurrence rule and return a localized human-readable description
   static String describeWithL10n(String? rule, AppLocalizations l10n) {
-    final description = engine.RecurrenceRule.description(rule);
-    final interval = description.values['interval'] as int?;
+    final description = _description(rule);
     return switch (description.key) {
       'none' => '',
       'daily' => l10n.recurrenceDaily,
       'weekly' => l10n.recurrenceWeekly,
       'monthly' => l10n.recurrenceMonthly,
       'yearly' => l10n.recurrenceYearly,
-      'everyNDays' => l10n.recurrenceEveryNDays(interval!),
-      'everyNWeeks' => l10n.recurrenceEveryNWeeks(interval!),
-      'everyNMonths' => l10n.recurrenceEveryNMonths(interval!),
+      'everyNDays' => l10n.recurrenceEveryNDays(description.interval!),
+      'everyNWeeks' => l10n.recurrenceEveryNWeeks(description.interval!),
+      'everyNMonths' => l10n.recurrenceEveryNMonths(description.interval!),
       'weeklyOn' => l10n.recurrenceWeeklyOn(
-          _localizedDays(description.values['days']! as List<String>, l10n)
-              .join(', '),
+          _localizedDays(description.days, l10n).join(', '),
         ),
       _ => l10n.recurring,
     };
@@ -108,6 +104,63 @@ class RecurrenceRule {
   /// Calculate the next occurrence date based on the rule
   static DateTime? getNextOccurrence(DateTime current, String rule) {
     return engine.RecurrenceRule.nextOccurrence(current, rule);
+  }
+
+  static ({String key, int? interval, List<String> days}) _description(
+      String? rule) {
+    if (rule == null) return (key: 'none', interval: null, days: const []);
+    final values = <String, String>{};
+    for (final component in rule.split(';')) {
+      final separator = component.indexOf('=');
+      if (separator <= 0 || separator == component.length - 1) {
+        return (key: 'unknown', interval: null, days: const []);
+      }
+      final key = component.substring(0, separator);
+      if (!const {'FREQ', 'INTERVAL', 'BYDAY', 'BYMONTHDAY'}.contains(key) ||
+          values.containsKey(key)) {
+        return (key: 'unknown', interval: null, days: const []);
+      }
+      values[key] = component.substring(separator + 1);
+    }
+    final frequency = values['FREQ'];
+    if (!const {'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'}.contains(frequency)) {
+      return (key: 'unknown', interval: null, days: const []);
+    }
+    final interval =
+        values['INTERVAL'] == null ? 1 : int.tryParse(values['INTERVAL']!);
+    final days = values['BYDAY']?.split(',') ?? const <String>[];
+    const validDays = {'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'};
+    final monthDay = values['BYMONTHDAY'] == null
+        ? null
+        : int.tryParse(values['BYMONTHDAY']!);
+    if (interval == null ||
+        interval < 1 ||
+        days.any((day) => !validDays.contains(day)) ||
+        (days.isNotEmpty && frequency != 'WEEKLY') ||
+        (values.containsKey('BYMONTHDAY') && monthDay == null) ||
+        (monthDay != null &&
+            (monthDay < 1 || monthDay > 31 || frequency != 'MONTHLY'))) {
+      return (key: 'unknown', interval: null, days: const []);
+    }
+    if (values.containsKey('INTERVAL')) {
+      if (frequency == 'YEARLY') {
+        return (key: 'unknown', interval: null, days: const []);
+      }
+      if (interval == 1) {
+        return (key: frequency!.toLowerCase(), interval: null, days: const []);
+      }
+      final key = switch (frequency) {
+        'DAILY' => 'everyNDays',
+        'WEEKLY' => 'everyNWeeks',
+        _ => 'everyNMonths',
+      };
+      return (key: key, interval: interval, days: const []);
+    }
+    if (days.isNotEmpty) return (key: 'weeklyOn', interval: null, days: days);
+    if (monthDay != null) {
+      return (key: 'unknown', interval: null, days: const []);
+    }
+    return (key: frequency!.toLowerCase(), interval: null, days: const []);
   }
 
   static List<String> _englishDays(List<String> days) {
