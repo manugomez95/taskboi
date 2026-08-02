@@ -67,6 +67,9 @@ run_component() {
         dart test
       )
       ;;
+    task-engine-consumer-contract)
+      "$REPO_ROOT/scripts/ci/test-task-engine-consumer-contract.sh"
+      ;;
     backend-migrations)
       "$REPO_ROOT/scripts/ci/check-migrations.sh"
       ;;
@@ -104,6 +107,7 @@ else
     flutter-analyze
     flutter-test
     task-engine
+    task-engine-consumer-contract
     backend-migrations
     backend-check
     backend-test

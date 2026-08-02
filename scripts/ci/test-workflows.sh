@@ -111,11 +111,28 @@ generate_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical
 format_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-format' | cut -d: -f1)"
 analyze_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-analyze' | cut -d: -f1)"
 test_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh flutter-test' | cut -d: -f1)"
-task_engine_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh task-engine' | cut -d: -f1 || true)"
+task_engine_line="$(printf '%s\n' "$flutter_job" | grep -n -E 'scripts/ci/technical-health\.sh task-engine$' | cut -d: -f1 || true)"
+task_engine_contract_line="$(printf '%s\n' "$flutter_job" | grep -n -F 'scripts/ci/technical-health.sh task-engine-consumer-contract' | cut -d: -f1 || true)"
 [[ -n "$locked_line" && "$locked_line" -lt "$generate_line" && \
   "$generate_line" -lt "$format_line" && "$format_line" -lt "$analyze_line" && \
-  "$analyze_line" -lt "$test_line" && "$test_line" -lt "$task_engine_line" ]] \
+  "$analyze_line" -lt "$test_line" && "$test_line" -lt "$task_engine_line" && \
+  "$task_engine_line" -lt "$task_engine_contract_line" ]] \
   || fail "Flutter technical-health components are missing or out of order"
+
+if ! ruby -rpsych -e '
+  begin
+    workflow = Psych.safe_load(File.read(ARGV.fetch(0)), aliases: false)
+    steps = workflow.fetch("jobs").fetch("flutter").fetch("steps")
+    commands = steps.map { |step| step["run"] if step.is_a?(Hash) }.compact
+    engine = commands.index("scripts/ci/technical-health.sh task-engine")
+    contract = commands.index("scripts/ci/technical-health.sh task-engine-consumer-contract")
+    exit 1 unless engine && contract && contract == engine + 1
+  rescue Psych::Exception, KeyError, TypeError
+    exit 1
+  end
+' "$CI"; then
+  fail "Flutter job must run task-engine-consumer-contract immediately after task-engine"
+fi
 
 for component in backend-migrations backend-check backend-test; do
   grep -F "scripts/ci/technical-health.sh $component" "$CI" >/dev/null \
