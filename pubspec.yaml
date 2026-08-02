@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   taskboi_task_engine:
     path: packages/taskboi_task_engine
+  taskboi_backup_core:
+    path: packages/taskboi_backup_core
 
   # UI
   cupertino_icons: ^1.0.8

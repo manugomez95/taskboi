@@ -1,15 +1,16 @@
-import 'dart:convert';
-
 import 'package:drift/drift.dart';
+import 'package:taskboi_backup_core/taskboi_backup_core.dart';
 
 import '../../../../core/database/database.dart';
-import '../models/backup_format.dart';
 
 /// Service for exporting and importing backup data
 class BackupService {
   final AppDatabase _db;
+  final BackupArchiveCodec _codec;
 
-  BackupService(this._db);
+  BackupService(this._db,
+      {BackupArchiveCodec codec = const BackupArchiveCodec()})
+      : _codec = codec;
 
   /// Exports all user data to a JSON string
   Future<String> exportToJson(String userId) async {
@@ -46,16 +47,14 @@ class BackupService {
       ));
     }
 
-    final backupData = BackupData(
-      version: '1.0',
+    final backupData = BackupArchive(
+      version: BackupArchiveMetadata.currentFormatVersion,
       exportedAt: DateTime.now(),
       appVersion: '1.0.0',
       projects: backupProjects,
     );
 
-    // Pretty print JSON for readability
-    const encoder = JsonEncoder.withIndent('  ');
-    return encoder.convert(backupData.toJson());
+    return _codec.encode(backupData);
   }
 
   /// Builds a backup task with its subtasks and comments
@@ -100,14 +99,7 @@ class BackupService {
   /// Returns the number of projects imported
   Future<ImportResult> importFromJson(String jsonString, String userId) async {
     try {
-      final json = jsonDecode(jsonString) as Map<String, dynamic>;
-      final backupData = BackupData.fromJson(json);
-
-      // Validate version
-      if (!backupData.version.startsWith('1.')) {
-        throw FormatException(
-            'Unsupported backup version: ${backupData.version}');
-      }
+      final backupData = _codec.decode(jsonString);
 
       int projectCount = 0;
       int taskCount = 0;
