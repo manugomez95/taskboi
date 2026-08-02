@@ -65,7 +65,7 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
   final String? _userId;
 
   ProjectsNotifier(this._db, this._syncService, this._userId)
-    : super(const AsyncValue.data(null));
+      : super(const AsyncValue.data(null));
 
   Future<Project?> createProject({
     required String name,
@@ -85,8 +85,8 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
       final maxSortOrder = existingProjects.isEmpty
           ? -1
           : existingProjects
-                .map((p) => p.sortOrder)
-                .reduce((a, b) => a > b ? a : b);
+              .map((p) => p.sortOrder)
+              .reduce((a, b) => a > b ? a : b);
 
       final project = Project(
         id: id,
@@ -162,9 +162,8 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
           name: name != null ? Value(name) : const Value.absent(),
           color: color != null ? Value(color) : const Value.absent(),
           icon: icon != null ? Value(icon) : const Value.absent(),
-          sortOrder: sortOrder != null
-              ? Value(sortOrder)
-              : const Value.absent(),
+          sortOrder:
+              sortOrder != null ? Value(sortOrder) : const Value.absent(),
           updatedAt: Value(now),
           isPendingSync: const Value(true),
         ),
@@ -207,7 +206,8 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
       final project = reorderedNonInbox[i];
       await (_db.update(
         _db.projects,
-      )..where((p) => p.id.equals(project.id))).write(
+      )..where((p) => p.id.equals(project.id)))
+          .write(
         ProjectsCompanion(
           sortOrder: Value(i),
           updatedAt: Value(now),
@@ -230,9 +230,9 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
 
 final projectsNotifierProvider =
     StateNotifierProvider<ProjectsNotifier, AsyncValue<void>>((ref) {
-      final db = ref.watch(appDatabaseProvider);
-      final syncService = ref.watch(syncServiceProvider);
-      final userId = ref.watch(currentUserProvider)?.id;
+  final db = ref.watch(appDatabaseProvider);
+  final syncService = ref.watch(syncServiceProvider);
+  final userId = ref.watch(currentUserProvider)?.id;
 
-      return ProjectsNotifier(db, syncService, userId);
-    });
+  return ProjectsNotifier(db, syncService, userId);
+});

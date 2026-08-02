@@ -24,24 +24,24 @@ class CommentCreationResult {
   const CommentCreationResult._(this.status, this.comment);
 
   const CommentCreationResult.created(Comment comment)
-    : this._(CommentCreationStatus.created, comment);
+      : this._(CommentCreationStatus.created, comment);
 
   const CommentCreationResult.notCreated()
-    : this._(CommentCreationStatus.notCreated, null);
+      : this._(CommentCreationStatus.notCreated, null);
 
   const CommentCreationResult.attachmentsPending(Comment comment)
-    : this._(CommentCreationStatus.attachmentsPending, comment);
+      : this._(CommentCreationStatus.attachmentsPending, comment);
 }
 
 // Stream from local Drift database - comments for a specific task
 final _localCommentsStreamProvider =
     StreamProvider.family<List<Comment>, String>((ref, taskId) {
-      final db = ref.watch(appDatabaseProvider);
+  final db = ref.watch(appDatabaseProvider);
 
-      return db.watchComments(taskId).map((driftComments) {
-        return ModelConverters.commentsFromDrift(driftComments);
-      });
-    });
+  return db.watchComments(taskId).map((driftComments) {
+    return ModelConverters.commentsFromDrift(driftComments);
+  });
+});
 
 // Holds IDs of comments pending deletion (for optimistic UI with undo)
 final _pendingCommentDeletionProvider = StateProvider<Set<String>>((ref) => {});
@@ -49,13 +49,13 @@ final _pendingCommentDeletionProvider = StateProvider<Set<String>>((ref) => {});
 // Main comments stream provider - reads from local DB, filters deleted
 final commentsStreamProvider =
     Provider.family<AsyncValue<List<Comment>>, String>((ref, taskId) {
-      final pendingDeletion = ref.watch(_pendingCommentDeletionProvider);
-      final stream = ref.watch(_localCommentsStreamProvider(taskId));
+  final pendingDeletion = ref.watch(_pendingCommentDeletionProvider);
+  final stream = ref.watch(_localCommentsStreamProvider(taskId));
 
-      return stream.whenData((comments) {
-        return comments.where((c) => !pendingDeletion.contains(c.id)).toList();
-      });
-    });
+  return stream.whenData((comments) {
+    return comments.where((c) => !pendingDeletion.contains(c.id)).toList();
+  });
+});
 
 // Count of comments for a task (for display in task list)
 final commentCountProvider = Provider.family<AsyncValue<int>, String>((
@@ -74,8 +74,8 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
   final SupabaseClient _supabase;
 
   CommentsNotifier(this._db, this._syncService, this._userId, this._ref)
-    : _supabase = Supabase.instance.client,
-      super(const AsyncValue.data(null));
+      : _supabase = Supabase.instance.client,
+        super(const AsyncValue.data(null));
 
   /// Upload a single image through the authenticated Edge Function. The
   /// server validates the bytes and derives the object key and ownership.
@@ -283,7 +283,8 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       final now = DateTime.now();
       await (_db.update(
         _db.comments,
-      )..where((c) => c.id.equals(commentId))).write(
+      )..where((c) => c.id.equals(commentId)))
+          .write(
         CommentsCompanion(
           images: Value(jsonEncode(imageIds)),
           updatedAt: Value(now),
@@ -410,17 +411,16 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
   /// Clear pending deletion status (comment reappears if not actually deleted)
   void clearPendingDeletion(String commentId) {
     final current = _ref.read(_pendingCommentDeletionProvider);
-    _ref.read(_pendingCommentDeletionProvider.notifier).state = current
-        .where((id) => id != commentId)
-        .toSet();
+    _ref.read(_pendingCommentDeletionProvider.notifier).state =
+        current.where((id) => id != commentId).toSet();
   }
 }
 
 final commentsNotifierProvider =
     StateNotifierProvider<CommentsNotifier, AsyncValue<void>>((ref) {
-      final db = ref.watch(appDatabaseProvider);
-      final syncService = ref.watch(syncServiceProvider);
-      final userId = ref.watch(currentUserProvider)?.id;
+  final db = ref.watch(appDatabaseProvider);
+  final syncService = ref.watch(syncServiceProvider);
+  final userId = ref.watch(currentUserProvider)?.id;
 
-      return CommentsNotifier(db, syncService, userId, ref);
-    });
+  return CommentsNotifier(db, syncService, userId, ref);
+});
