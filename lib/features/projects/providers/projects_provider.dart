@@ -7,7 +7,7 @@ import '../../../core/database/model_converters.dart';
 import '../../../core/sync/sync_operation.dart';
 import '../../../core/sync/sync_provider.dart';
 import '../../../core/sync/sync_service.dart';
-import '../../../core/utils/supabase_serialization.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart' show utcIso8601;
 import '../../auth/providers/auth_provider.dart';
 import '../data/models/project.dart';
 
@@ -44,11 +44,14 @@ final inboxProjectProvider = FutureProvider<Project?>((ref) async {
 });
 
 // Single project by ID from local DB
-final projectProvider =
-    FutureProvider.family<Project?, String>((ref, id) async {
+final projectProvider = FutureProvider.family<Project?, String>((
+  ref,
+  id,
+) async {
   final db = ref.watch(appDatabaseProvider);
-  final projects =
-      await db.getProjects(ref.watch(currentUserProvider)?.id ?? '');
+  final projects = await db.getProjects(
+    ref.watch(currentUserProvider)?.id ?? '',
+  );
 
   final driftProject = projects.where((p) => p.id == id).firstOrNull;
   if (driftProject == null) return null;
@@ -98,19 +101,21 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       // Write to local DB immediately
-      await _db.upsertProject(ProjectsCompanion(
-        id: Value(id),
-        userId: Value(_userId),
-        name: Value(name),
-        color: Value(color),
-        icon: Value(icon ?? 'folder'),
-        isInbox: const Value(false),
-        sortOrder: Value(maxSortOrder + 1),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        isPendingSync: const Value(true),
-        isDeleted: const Value(false),
-      ));
+      await _db.upsertProject(
+        ProjectsCompanion(
+          id: Value(id),
+          userId: Value(_userId),
+          name: Value(name),
+          color: Value(color),
+          icon: Value(icon ?? 'folder'),
+          isInbox: const Value(false),
+          sortOrder: Value(maxSortOrder + 1),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+          isPendingSync: const Value(true),
+          isDeleted: const Value(false),
+        ),
+      );
 
       // Queue sync operation
       await _syncService.queueCreate(
@@ -144,7 +149,7 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
       // Build update payload
       final updates = <String, dynamic>{
         'id': id,
-        'updated_at': utcIso(now),
+        'updated_at': utcIso8601(now),
       };
       if (name != null) updates['name'] = name;
       if (color != null) updates['color'] = color;
@@ -199,7 +204,9 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
     final now = DateTime.now();
     for (int i = 0; i < reorderedNonInbox.length; i++) {
       final project = reorderedNonInbox[i];
-      await (_db.update(_db.projects)..where((p) => p.id.equals(project.id)))
+      await (_db.update(
+        _db.projects,
+      )..where((p) => p.id.equals(project.id)))
           .write(
         ProjectsCompanion(
           sortOrder: Value(i),
@@ -209,11 +216,11 @@ class ProjectsNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       // Queue sync for each project
-      await _syncService.queueUpdate(
-        SyncEntityType.project,
-        project.id,
-        {'id': project.id, 'sort_order': i, 'updated_at': utcIso(now)},
-      );
+      await _syncService.queueUpdate(SyncEntityType.project, project.id, {
+        'id': project.id,
+        'sort_order': i,
+        'updated_at': utcIso8601(now),
+      });
     }
 
     // Try to sync immediately

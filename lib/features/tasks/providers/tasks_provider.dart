@@ -10,7 +10,8 @@ import '../../../core/database/model_converters.dart';
 import '../../../core/sync/sync_operation.dart';
 import '../../../core/sync/sync_provider.dart';
 import '../../../core/sync/sync_service.dart';
-import '../../../core/utils/supabase_serialization.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart'
+    show civilDateIso8601, utcIso8601;
 import '../../auth/providers/auth_provider.dart';
 import '../../projects/providers/projects_provider.dart';
 import '../../settings/providers/theme_provider.dart';
@@ -29,8 +30,9 @@ class TaskViewKey {
 }
 
 /// Fetches the user's saved sort preferences before the first task render.
-final _sortPreferencesInitialProvider =
-    FutureProvider<Map<String, String>>((ref) async {
+final _sortPreferencesInitialProvider = FutureProvider<Map<String, String>>((
+  ref,
+) async {
   final user = ref.watch(currentUserProvider);
   if (user == null) return {};
 
@@ -39,8 +41,9 @@ final _sortPreferencesInitialProvider =
 });
 
 /// Stream provider that watches all sort preferences from Supabase
-final _sortPreferencesStreamProvider =
-    StreamProvider<Map<String, String>>((ref) {
+final _sortPreferencesStreamProvider = StreamProvider<Map<String, String>>((
+  ref,
+) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return Stream.value({});
 
@@ -49,8 +52,9 @@ final _sortPreferencesStreamProvider =
 });
 
 /// Optimistic sort preferences state - used for instant UI updates per view
-final _optimisticSortPreferencesProvider =
-    StateProvider<Map<String, String>>((ref) => {});
+final _optimisticSortPreferencesProvider = StateProvider<Map<String, String>>(
+  (ref) => {},
+);
 
 /// Provider to store the current sort option per view with Supabase sync
 class TaskSortNotifier extends StateNotifier<TaskSortOption> {
@@ -65,8 +69,9 @@ class TaskSortNotifier extends StateNotifier<TaskSortOption> {
     state = option;
 
     // Update optimistic preferences
-    final current =
-        Map<String, String>.from(_ref.read(_optimisticSortPreferencesProvider));
+    final current = Map<String, String>.from(
+      _ref.read(_optimisticSortPreferencesProvider),
+    );
     current[_viewKey] = option.name;
     _ref.read(_optimisticSortPreferencesProvider.notifier).state = current;
 
@@ -78,7 +83,8 @@ class TaskSortNotifier extends StateNotifier<TaskSortOption> {
       // Clear optimistic state after delay to let stream catch up
       Future.delayed(const Duration(milliseconds: 500), () {
         final optimistic = Map<String, String>.from(
-            _ref.read(_optimisticSortPreferencesProvider));
+          _ref.read(_optimisticSortPreferencesProvider),
+        );
         optimistic.remove(_viewKey);
         _ref.read(_optimisticSortPreferencesProvider.notifier).state =
             optimistic;
@@ -91,28 +97,28 @@ class TaskSortNotifier extends StateNotifier<TaskSortOption> {
 
 /// Family provider for per-view task sorting with Supabase persistence
 final taskSortNotifierProvider =
-    StateNotifierProvider.family<TaskSortNotifier, TaskSortOption, String>(
-  (ref, viewKey) {
-    // Watch initial fetch, stream, and optimistic state to trigger rebuilds.
-    // Use the fetched preferences until the stream emits, avoiding a startup
-    // flash where tasks are temporarily sorted with default values.
-    final initialPrefs =
-        ref.watch(_sortPreferencesInitialProvider).valueOrNull ?? {};
-    final streamPrefs =
-        ref.watch(_sortPreferencesStreamProvider).valueOrNull ?? initialPrefs;
-    final optimisticPrefs = ref.watch(_optimisticSortPreferencesProvider);
+    StateNotifierProvider.family<TaskSortNotifier, TaskSortOption, String>((
+  ref,
+  viewKey,
+) {
+  // Watch initial fetch, stream, and optimistic state to trigger rebuilds.
+  // Use the fetched preferences until the stream emits, avoiding a startup
+  // flash where tasks are temporarily sorted with default values.
+  final initialPrefs =
+      ref.watch(_sortPreferencesInitialProvider).valueOrNull ?? {};
+  final streamPrefs =
+      ref.watch(_sortPreferencesStreamProvider).valueOrNull ?? initialPrefs;
+  final optimisticPrefs = ref.watch(_optimisticSortPreferencesProvider);
 
-    // Determine the current sort option
-    final sortName =
-        optimisticPrefs[viewKey] ?? streamPrefs[viewKey] ?? 'manual';
-    final sortOption = TaskSortOption.values.firstWhere(
-      (o) => o.name == sortName,
-      orElse: () => TaskSortOption.manual,
-    );
+  // Determine the current sort option
+  final sortName = optimisticPrefs[viewKey] ?? streamPrefs[viewKey] ?? 'manual';
+  final sortOption = TaskSortOption.values.firstWhere(
+    (o) => o.name == sortName,
+    orElse: () => TaskSortOption.manual,
+  );
 
-    return TaskSortNotifier(ref, viewKey, sortOption);
-  },
-);
+  return TaskSortNotifier(ref, viewKey, sortOption);
+});
 
 // ============================================
 // SHOW COMPLETED TASKS PROVIDERS
@@ -195,10 +201,14 @@ Future<void> toggleShowCompleted(WidgetRef ref, String viewKey) async {
 
 /// Set show completed for a view with optimistic update to Supabase.
 Future<void> setShowCompleted(
-    WidgetRef ref, String viewKey, bool showCompleted) async {
+  WidgetRef ref,
+  String viewKey,
+  bool showCompleted,
+) async {
   // Optimistically update immediately
   final current = Map<String, bool>.from(
-      ref.read(_optimisticShowCompletedPreferencesProvider));
+    ref.read(_optimisticShowCompletedPreferencesProvider),
+  );
   current[viewKey] = showCompleted;
   ref.read(_optimisticShowCompletedPreferencesProvider.notifier).state =
       current;
@@ -211,7 +221,8 @@ Future<void> setShowCompleted(
     // Clear optimistic state after delay to let stream catch up
     Future.delayed(const Duration(milliseconds: 500), () {
       final optimistic = Map<String, bool>.from(
-          ref.read(_optimisticShowCompletedPreferencesProvider));
+        ref.read(_optimisticShowCompletedPreferencesProvider),
+      );
       optimistic.remove(viewKey);
       ref.read(_optimisticShowCompletedPreferencesProvider.notifier).state =
           optimistic;
@@ -257,8 +268,10 @@ List<Task> applySorting(List<Task> tasks, TaskSortOption sortOption) {
 }
 
 // Stream from local Drift database - tasks for a specific project
-final _localTasksStreamProvider =
-    StreamProvider.family<List<Task>, String?>((ref, projectId) {
+final _localTasksStreamProvider = StreamProvider.family<List<Task>, String?>((
+  ref,
+  projectId,
+) {
   final db = ref.watch(appDatabaseProvider);
   final user = ref.watch(currentUserProvider);
 
@@ -319,8 +332,10 @@ AsyncValue<List<Task>> _applyOptimisticTaskOverlay(
 
 // Main tasks stream provider - reads from local DB and applies optimistic state.
 // Note: Sorting is applied per-view in the UI layer using taskSortNotifierProvider
-final tasksStreamProvider =
-    Provider.family<AsyncValue<List<Task>>, String?>((ref, projectId) {
+final tasksStreamProvider = Provider.family<AsyncValue<List<Task>>, String?>((
+  ref,
+  projectId,
+) {
   final pendingDeletion = ref.watch(_pendingDeletionProvider);
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localTasksStreamProvider(projectId));
@@ -409,8 +424,10 @@ final upcomingTasksProvider = Provider<AsyncValue<List<Task>>>((ref) {
 });
 
 // Subtasks from local DB
-final subtasksProvider =
-    FutureProvider.family<List<Task>, String>((ref, parentId) async {
+final subtasksProvider = FutureProvider.family<List<Task>, String>((
+  ref,
+  parentId,
+) async {
   final db = ref.watch(appDatabaseProvider);
   final pendingDeletion = ref.watch(_pendingDeletionProvider);
 
@@ -421,16 +438,20 @@ final subtasksProvider =
 });
 
 // Subtasks stream from local DB
-final _localSubtasksStreamProvider =
-    StreamProvider.family<List<Task>, String>((ref, parentId) {
+final _localSubtasksStreamProvider = StreamProvider.family<List<Task>, String>((
+  ref,
+  parentId,
+) {
   final db = ref.watch(appDatabaseProvider);
   return db.watchSubtasks(parentId).map((driftTasks) {
     return ModelConverters.tasksFromDrift(driftTasks);
   });
 });
 
-final subtasksStreamProvider =
-    Provider.family<AsyncValue<List<Task>>, String>((ref, parentId) {
+final subtasksStreamProvider = Provider.family<AsyncValue<List<Task>>, String>((
+  ref,
+  parentId,
+) {
   final pendingDeletion = ref.watch(_pendingDeletionProvider);
   final pendingCompletion = ref.watch(_pendingCompletionProvider);
   final stream = ref.watch(_localSubtasksStreamProvider(parentId));
@@ -536,26 +557,28 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       // Write to local DB immediately
-      await _db.upsertTask(TasksCompanion(
-        id: Value(taskId),
-        projectId: Value(projectId),
-        userId: Value(_userId),
-        parentId: Value(parentId),
-        title: Value(title),
-        description: Value(description),
-        dueDate: Value(dueDate),
-        dueTime: Value(dueTime),
-        priority: Value(priority),
-        isCompleted: const Value(false),
-        sortOrder: Value(maxSortOrder + 1),
-        recurrenceRule: Value(recurrenceRule),
-        recurrenceParentId: Value(recurrenceParentId),
-        recurrenceAnchorDate: Value(anchorDate),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        isPendingSync: const Value(true),
-        isDeleted: const Value(false),
-      ));
+      await _db.upsertTask(
+        TasksCompanion(
+          id: Value(taskId),
+          projectId: Value(projectId),
+          userId: Value(_userId),
+          parentId: Value(parentId),
+          title: Value(title),
+          description: Value(description),
+          dueDate: Value(dueDate),
+          dueTime: Value(dueTime),
+          priority: Value(priority),
+          isCompleted: const Value(false),
+          sortOrder: Value(maxSortOrder + 1),
+          recurrenceRule: Value(recurrenceRule),
+          recurrenceParentId: Value(recurrenceParentId),
+          recurrenceAnchorDate: Value(anchorDate),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+          isPendingSync: const Value(true),
+          isDeleted: const Value(false),
+        ),
+      );
 
       // Queue sync operation
       await _syncService.queueCreate(
@@ -598,7 +621,7 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       // Build update payload
       final updates = <String, dynamic>{
         'id': id,
-        'updated_at': utcIso(now),
+        'updated_at': utcIso8601(now),
       };
       if (title != null) updates['title'] = title;
       // Empty string or explicit null means clear the description.
@@ -607,7 +630,7 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
             description == null || description.isEmpty ? null : description;
       }
       if (dueDate != null || updateDueDate) {
-        updates['due_date'] = dateOnly(dueDate);
+        updates['due_date'] = civilDateIso8601(dueDate);
       }
       if (dueTime != null || updateDueTime) {
         updates['due_time'] = dueTime;
@@ -624,9 +647,11 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
           title: title != null ? Value(title) : const Value.absent(),
           // Empty string or explicit null means clear the description.
           description: description != null || updateDescription
-              ? Value(description == null || description.isEmpty
-                  ? null
-                  : description)
+              ? Value(
+                  description == null || description.isEmpty
+                      ? null
+                      : description,
+                )
               : const Value.absent(),
           dueDate: dueDate != null || updateDueDate
               ? Value(dueDate)
@@ -664,9 +689,9 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       // Build update payload - explicitly include due_date even if null
       final updates = <String, dynamic>{
         'id': id,
-        'due_date': dateOnly(dueDate),
+        'due_date': civilDateIso8601(dueDate),
         'due_time': null,
-        'updated_at': utcIso(now),
+        'updated_at': utcIso8601(now),
       };
 
       // Update local DB
@@ -699,8 +724,9 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     final task = ModelConverters.taskFromDrift(driftTask);
 
     // Update local DB
-    final updatedRows = await (_db.update(_db.tasks)
-          ..where((t) => t.id.equals(id) & t.isCompleted.equals(false)))
+    final updatedRows = await (_db.update(
+      _db.tasks,
+    )..where((t) => t.id.equals(id) & t.isCompleted.equals(false)))
         .write(
       TasksCompanion(
         isCompleted: const Value(true),
@@ -715,8 +741,8 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     await _syncService.queueUpdate(SyncEntityType.task, id, {
       'id': id,
       'is_completed': true,
-      'completed_at': utcIso(now),
-      'updated_at': utcIso(now),
+      'completed_at': utcIso8601(now),
+      'updated_at': utcIso8601(now),
     });
 
     // Handle recurring tasks - create next occurrence
@@ -784,15 +810,17 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     final startOfDay = DateTime(dueDate.year, dueDate.month, dueDate.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
     final existing = await (_db.select(_db.tasks)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.projectId.equals(projectId) &
-              t.isDeleted.equals(false) &
-              t.isCompleted.equals(false) &
-              t.recurrenceRule.equals(recurrenceRule) &
-              t.recurrenceParentId.equals(recurrenceParentId) &
-              t.dueDate.isBiggerOrEqualValue(startOfDay) &
-              t.dueDate.isSmallerThanValue(endOfDay))
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.projectId.equals(projectId) &
+                t.isDeleted.equals(false) &
+                t.isCompleted.equals(false) &
+                t.recurrenceRule.equals(recurrenceRule) &
+                t.recurrenceParentId.equals(recurrenceParentId) &
+                t.dueDate.isBiggerOrEqualValue(startOfDay) &
+                t.dueDate.isSmallerThanValue(endOfDay),
+          )
           ..limit(1))
         .getSingleOrNull();
 
@@ -806,10 +834,7 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     return engine.recurringOccurrenceId(
       recurrenceParentId: recurrenceParentId,
       occurrenceDate: dueDate,
-      generateId: (material) => const Uuid().v5(
-        Namespace.url.value,
-        material,
-      ),
+      generateId: (material) => const Uuid().v5(Namespace.url.value, material),
     );
   }
 
@@ -836,7 +861,7 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       'id': id,
       'is_completed': false,
       'completed_at': null,
-      'updated_at': utcIso(now),
+      'updated_at': utcIso8601(now),
     });
 
     // Completing a recurring task spawns the next occurrence (see
@@ -868,12 +893,14 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
     // Match only spawned occurrences (recurrenceParentId == seriesId), never
     // the series root itself, and never the instance being re-opened.
     final occurrences = await (_db.select(_db.tasks)
-          ..where((t) =>
-              t.userId.equals(userId) &
-              t.isDeleted.equals(false) &
-              t.isCompleted.equals(false) &
-              t.id.isNotIn([excludingId]) &
-              t.recurrenceParentId.equals(seriesId)))
+          ..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.isDeleted.equals(false) &
+                t.isCompleted.equals(false) &
+                t.id.isNotIn([excludingId]) &
+                t.recurrenceParentId.equals(seriesId),
+          ))
         .get();
 
     for (final occ in occurrences) {
@@ -958,7 +985,7 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       await _syncService.queueUpdate(SyncEntityType.task, taskId, {
         'id': taskId,
         'project_id': newProjectId,
-        'updated_at': utcIso(now),
+        'updated_at': utcIso8601(now),
       });
 
       _processPendingOperationsInBackground();
@@ -970,7 +997,9 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
   }
 
   Future<void> reorderTasks(
-      List<Task> reorderedTasks, String? projectId) async {
+    List<Task> reorderedTasks,
+    String? projectId,
+  ) async {
     final now = DateTime.now();
 
     // Update sort orders in local DB
@@ -985,11 +1014,11 @@ class TasksNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       // Queue sync for each task
-      await _syncService.queueUpdate(
-        SyncEntityType.task,
-        task.id,
-        {'id': task.id, 'sort_order': i, 'updated_at': utcIso(now)},
-      );
+      await _syncService.queueUpdate(SyncEntityType.task, task.id, {
+        'id': task.id,
+        'sort_order': i,
+        'updated_at': utcIso8601(now),
+      });
     }
 
     _processPendingOperationsInBackground();

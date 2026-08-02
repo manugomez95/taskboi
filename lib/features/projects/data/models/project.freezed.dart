@@ -30,9 +30,9 @@ mixin _$Project {
   bool get isInbox => throw _privateConstructorUsedError;
   @JsonKey(name: 'sort_order')
   int get sortOrder => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Project to a JSON map.
@@ -57,8 +57,8 @@ abstract class $ProjectCopyWith<$Res> {
       String? icon,
       @JsonKey(name: 'is_inbox') bool isInbox,
       @JsonKey(name: 'sort_order') int sortOrder,
-      @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
+      @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -142,8 +142,8 @@ abstract class _$$ProjectImplCopyWith<$Res> implements $ProjectCopyWith<$Res> {
       String? icon,
       @JsonKey(name: 'is_inbox') bool isInbox,
       @JsonKey(name: 'sort_order') int sortOrder,
-      @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
+      @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -221,8 +221,8 @@ class _$ProjectImpl implements _Project {
       this.icon = 'folder',
       @JsonKey(name: 'is_inbox') this.isInbox = false,
       @JsonKey(name: 'sort_order') this.sortOrder = 0,
-      @JsonKey(name: 'created_at', toJson: utcIso) this.createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) this.updatedAt});
+      @JsonKey(name: 'created_at', toJson: utcIso8601) this.createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) this.updatedAt});
 
   factory _$ProjectImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProjectImplFromJson(json);
@@ -247,10 +247,10 @@ class _$ProjectImpl implements _Project {
   @JsonKey(name: 'sort_order')
   final int sortOrder;
   @override
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   final DateTime? createdAt;
   @override
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   final DateTime? updatedAt;
 
   @override
@@ -307,8 +307,9 @@ abstract class _Project implements Project {
       final String? icon,
       @JsonKey(name: 'is_inbox') final bool isInbox,
       @JsonKey(name: 'sort_order') final int sortOrder,
-      @JsonKey(name: 'created_at', toJson: utcIso) final DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso)
+      @JsonKey(name: 'created_at', toJson: utcIso8601)
+      final DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601)
       final DateTime? updatedAt}) = _$ProjectImpl;
 
   factory _Project.fromJson(Map<String, dynamic> json) = _$ProjectImpl.fromJson;
@@ -331,10 +332,10 @@ abstract class _Project implements Project {
   @JsonKey(name: 'sort_order')
   int get sortOrder;
   @override
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   DateTime? get createdAt;
   @override
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   DateTime? get updatedAt;
 
   /// Create a copy of Project

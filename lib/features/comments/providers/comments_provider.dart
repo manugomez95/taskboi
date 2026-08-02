@@ -11,7 +11,7 @@ import '../../../core/database/model_converters.dart';
 import '../../../core/sync/sync_operation.dart';
 import '../../../core/sync/sync_provider.dart';
 import '../../../core/sync/sync_service.dart';
-import '../../../core/utils/supabase_serialization.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart' show utcIso8601;
 import '../../auth/providers/auth_provider.dart';
 import '../data/models/comment.dart';
 
@@ -58,8 +58,10 @@ final commentsStreamProvider =
 });
 
 // Count of comments for a task (for display in task list)
-final commentCountProvider =
-    Provider.family<AsyncValue<int>, String>((ref, taskId) {
+final commentCountProvider = Provider.family<AsyncValue<int>, String>((
+  ref,
+  taskId,
+) {
   final commentsAsync = ref.watch(commentsStreamProvider(taskId));
   return commentsAsync.whenData((comments) => comments.length);
 });
@@ -118,7 +120,9 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
   /// Upload multiple images to Supabase Storage.
   /// Returns opaque image IDs; URLs are signed only when rendered.
   Future<List<String>> uploadImages(
-      List<File> imageFiles, String commentId) async {
+    List<File> imageFiles,
+    String commentId,
+  ) async {
     final imageIds = <String>[];
     try {
       for (final file in imageFiles) {
@@ -130,8 +134,10 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       final cleanupFailures = await _cleanupUnattachedImages(imageIds);
       if (cleanupFailures.isNotEmpty) {
         Error.throwWithStackTrace(
-          Exception('Image upload failed; cleanup also failed for: '
-              '${cleanupFailures.join(', ')} ($uploadError)'),
+          Exception(
+            'Image upload failed; cleanup also failed for: '
+            '${cleanupFailures.join(', ')} ($uploadError)',
+          ),
           uploadStack,
         );
       }
@@ -180,17 +186,19 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       );
 
       // Write to local DB immediately (optimistic)
-      await _db.upsertComment(CommentsCompanion(
-        id: Value(id),
-        taskId: Value(taskId),
-        userId: Value(_userId),
-        content: Value(content),
-        images: const Value('[]'),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        isPendingSync: const Value(true),
-        isDeleted: const Value(false),
-      ));
+      await _db.upsertComment(
+        CommentsCompanion(
+          id: Value(id),
+          taskId: Value(taskId),
+          userId: Value(_userId),
+          content: Value(content),
+          images: const Value('[]'),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+          isPendingSync: const Value(true),
+          isDeleted: const Value(false),
+        ),
+      );
 
       // Queue sync operation
       try {
@@ -231,7 +239,7 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
         await _syncService.queueUpdate(SyncEntityType.comment, id, {
           'id': id,
           'images': imageIds,
-          'updated_at': utcIso(now),
+          'updated_at': utcIso8601(now),
         });
         await _syncService.processPendingOperations();
         unattachedImageIds = const [];
@@ -240,8 +248,9 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
       return CommentCreationResult.created(comment.copyWith(images: imageIds));
     } catch (e, st) {
-      final cleanupFailures =
-          await _cleanupUnattachedImages(unattachedImageIds);
+      final cleanupFailures = await _cleanupUnattachedImages(
+        unattachedImageIds,
+      );
       final reported = cleanupFailures.isEmpty
           ? e
           : Exception('$e; cleanup failed for: ${cleanupFailures.join(', ')}');
@@ -272,7 +281,9 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       final imageIds = await uploadImages(imageFiles, commentId);
       unattachedImageIds = imageIds;
       final now = DateTime.now();
-      await (_db.update(_db.comments)..where((c) => c.id.equals(commentId)))
+      await (_db.update(
+        _db.comments,
+      )..where((c) => c.id.equals(commentId)))
           .write(
         CommentsCompanion(
           images: Value(jsonEncode(imageIds)),
@@ -283,15 +294,16 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
       await _syncService.queueUpdate(SyncEntityType.comment, commentId, {
         'id': commentId,
         'images': imageIds,
-        'updated_at': utcIso(now),
+        'updated_at': utcIso8601(now),
       });
       await _syncService.processPendingOperations();
       unattachedImageIds = const [];
       state = const AsyncValue.data(null);
       return true;
     } catch (error, stackTrace) {
-      final cleanupFailures =
-          await _cleanupUnattachedImages(unattachedImageIds);
+      final cleanupFailures = await _cleanupUnattachedImages(
+        unattachedImageIds,
+      );
       final reported = cleanupFailures.isEmpty
           ? error
           : Exception(
@@ -348,7 +360,7 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
         'id': id,
         'content': content,
         'images': images,
-        'updated_at': utcIso(now),
+        'updated_at': utcIso8601(now),
       });
 
       // The server-side comment trigger durably queues removed opaque and
@@ -358,8 +370,9 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
 
       state = const AsyncValue.data(null);
     } catch (e, st) {
-      final cleanupFailures =
-          await _cleanupUnattachedImages(unattachedImageIds);
+      final cleanupFailures = await _cleanupUnattachedImages(
+        unattachedImageIds,
+      );
       final reported = cleanupFailures.isEmpty
           ? e
           : Exception('$e; cleanup failed for: ${cleanupFailures.join(', ')}');
@@ -391,7 +404,7 @@ class CommentsNotifier extends StateNotifier<AsyncValue<void>> {
     final current = _ref.read(_pendingCommentDeletionProvider);
     _ref.read(_pendingCommentDeletionProvider.notifier).state = {
       ...current,
-      commentId
+      commentId,
     };
   }
 

@@ -2,6 +2,106 @@ part of '../taskboi_task_engine.dart';
 
 enum _RecurrenceFrequency { daily, weekly, monthly, yearly }
 
+/// Semantic recurrence variants understood by description adapters.
+enum RecurrenceDescriptionKind {
+  none,
+  daily,
+  weekly,
+  monthly,
+  yearly,
+  everyNDays,
+  everyNWeeks,
+  everyNMonths,
+  weeklyOn,
+  unknown,
+}
+
+/// Framework-free result of strictly parsing a rule for description.
+class RecurrenceDescription {
+  const RecurrenceDescription._(
+    this.kind, {
+    this.interval,
+    this.days = const [],
+  });
+
+  final RecurrenceDescriptionKind kind;
+  final int? interval;
+  final List<String> days;
+}
+
+/// Strict semantic parser used before presentation and localization.
+abstract final class RecurrenceDescriptor {
+  static const _none = RecurrenceDescription._(RecurrenceDescriptionKind.none);
+  static const _unknown = RecurrenceDescription._(
+    RecurrenceDescriptionKind.unknown,
+  );
+
+  static RecurrenceDescription parse(String? rule) {
+    if (rule == null) return _none;
+    final values = <String, String>{};
+    for (final component in rule.split(';')) {
+      final separator = component.indexOf('=');
+      if (separator <= 0 || separator == component.length - 1) return _unknown;
+      final key = component.substring(0, separator);
+      if (!const {'FREQ', 'INTERVAL', 'BYDAY', 'BYMONTHDAY'}.contains(key) ||
+          values.containsKey(key)) {
+        return _unknown;
+      }
+      values[key] = component.substring(separator + 1);
+    }
+
+    final frequency = values['FREQ'];
+    if (!const {'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'}.contains(frequency)) {
+      return _unknown;
+    }
+    final interval =
+        values['INTERVAL'] == null ? 1 : int.tryParse(values['INTERVAL']!);
+    final days = values['BYDAY']?.split(',') ?? const <String>[];
+    final monthDay = values['BYMONTHDAY'] == null
+        ? null
+        : int.tryParse(values['BYMONTHDAY']!);
+    if (interval == null ||
+        interval < 1 ||
+        days.any((day) => !RecurrenceRule._validDays.contains(day)) ||
+        (days.isNotEmpty && frequency != 'WEEKLY') ||
+        (values.containsKey('BYMONTHDAY') && monthDay == null) ||
+        (monthDay != null &&
+            (monthDay < 1 || monthDay > 31 || frequency != 'MONTHLY'))) {
+      return _unknown;
+    }
+
+    if (values.containsKey('INTERVAL')) {
+      if (frequency == 'YEARLY') return _unknown;
+      if (interval == 1) {
+        return RecurrenceDescription._(_simpleKind(frequency!));
+      }
+      final kind = switch (frequency) {
+        'DAILY' => RecurrenceDescriptionKind.everyNDays,
+        'WEEKLY' => RecurrenceDescriptionKind.everyNWeeks,
+        _ => RecurrenceDescriptionKind.everyNMonths,
+      };
+      return RecurrenceDescription._(kind, interval: interval);
+    }
+    if (days.isNotEmpty) {
+      return RecurrenceDescription._(
+        RecurrenceDescriptionKind.weeklyOn,
+        days: List.unmodifiable(days),
+      );
+    }
+    if (monthDay != null) return _unknown;
+    return RecurrenceDescription._(_simpleKind(frequency!));
+  }
+
+  static RecurrenceDescriptionKind _simpleKind(String frequency) =>
+      switch (frequency) {
+        'DAILY' => RecurrenceDescriptionKind.daily,
+        'WEEKLY' => RecurrenceDescriptionKind.weekly,
+        'MONTHLY' => RecurrenceDescriptionKind.monthly,
+        'YEARLY' => RecurrenceDescriptionKind.yearly,
+        _ => throw StateError('Validated frequency expected'),
+      };
+}
+
 class _ParsedRecurrenceRule {
   const _ParsedRecurrenceRule({
     required this.frequency,
@@ -66,10 +166,16 @@ abstract final class RecurrenceRule {
         );
       case _RecurrenceFrequency.monthly:
         return DateTime(
-            current.year, current.month + parsed.interval, current.day);
+          current.year,
+          current.month + parsed.interval,
+          current.day,
+        );
       case _RecurrenceFrequency.yearly:
         return DateTime(
-            current.year + parsed.interval, current.month, current.day);
+          current.year + parsed.interval,
+          current.month,
+          current.day,
+        );
     }
   }
 

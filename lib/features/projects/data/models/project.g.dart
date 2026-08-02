@@ -32,6 +32,6 @@ Map<String, dynamic> _$$ProjectImplToJson(_$ProjectImpl instance) =>
       'icon': instance.icon,
       'is_inbox': instance.isInbox,
       'sort_order': instance.sortOrder,
-      'created_at': utcIso(instance.createdAt),
-      'updated_at': utcIso(instance.updatedAt),
+      'created_at': utcIso8601(instance.createdAt),
+      'updated_at': utcIso8601(instance.updatedAt),
     };

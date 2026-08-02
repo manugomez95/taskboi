@@ -26,9 +26,9 @@ mixin _$Comment {
   @JsonKey(name: 'user_id')
   String get userId => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   DateTime? get updatedAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'images', fromJson: _imagesFromJson, toJson: _imagesToJson)
   List<String> get images => throw _privateConstructorUsedError;
@@ -52,8 +52,8 @@ abstract class $CommentCopyWith<$Res> {
       @JsonKey(name: 'task_id') String taskId,
       @JsonKey(name: 'user_id') String userId,
       String content,
-      @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt,
+      @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt,
       @JsonKey(name: 'images', fromJson: _imagesFromJson, toJson: _imagesToJson)
       List<String> images});
 }
@@ -126,8 +126,8 @@ abstract class _$$CommentImplCopyWith<$Res> implements $CommentCopyWith<$Res> {
       @JsonKey(name: 'task_id') String taskId,
       @JsonKey(name: 'user_id') String userId,
       String content,
-      @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt,
+      @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt,
       @JsonKey(name: 'images', fromJson: _imagesFromJson, toJson: _imagesToJson)
       List<String> images});
 }
@@ -194,8 +194,8 @@ class _$CommentImpl extends _Comment {
       @JsonKey(name: 'task_id') required this.taskId,
       @JsonKey(name: 'user_id') required this.userId,
       required this.content,
-      @JsonKey(name: 'created_at', toJson: utcIso) this.createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) this.updatedAt,
+      @JsonKey(name: 'created_at', toJson: utcIso8601) this.createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) this.updatedAt,
       @JsonKey(name: 'images', fromJson: _imagesFromJson, toJson: _imagesToJson)
       final List<String> images = const []})
       : _images = images,
@@ -215,10 +215,10 @@ class _$CommentImpl extends _Comment {
   @override
   final String content;
   @override
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   final DateTime? createdAt;
   @override
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   final DateTime? updatedAt;
   final List<String> _images;
   @override
@@ -277,8 +277,10 @@ abstract class _Comment extends Comment {
       @JsonKey(name: 'task_id') required final String taskId,
       @JsonKey(name: 'user_id') required final String userId,
       required final String content,
-      @JsonKey(name: 'created_at', toJson: utcIso) final DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) final DateTime? updatedAt,
+      @JsonKey(name: 'created_at', toJson: utcIso8601)
+      final DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601)
+      final DateTime? updatedAt,
       @JsonKey(name: 'images', fromJson: _imagesFromJson, toJson: _imagesToJson)
       final List<String> images}) = _$CommentImpl;
   const _Comment._() : super._();
@@ -296,10 +298,10 @@ abstract class _Comment extends Comment {
   @override
   String get content;
   @override
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   DateTime? get createdAt;
   @override
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   DateTime? get updatedAt;
   @override
   @JsonKey(name: 'images', fromJson: _imagesFromJson, toJson: _imagesToJson)

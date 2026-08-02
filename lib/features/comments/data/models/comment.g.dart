@@ -28,7 +28,7 @@ Map<String, dynamic> _$$CommentImplToJson(_$CommentImpl instance) =>
       'task_id': instance.taskId,
       'user_id': instance.userId,
       'content': instance.content,
-      'created_at': utcIso(instance.createdAt),
-      'updated_at': utcIso(instance.updatedAt),
+      'created_at': utcIso8601(instance.createdAt),
+      'updated_at': utcIso8601(instance.updatedAt),
       'images': _imagesToJson(instance.images),
     };

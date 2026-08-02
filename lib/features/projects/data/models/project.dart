@@ -1,9 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-import '../../../../core/utils/supabase_serialization.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart' show utcIso8601;
 
 part 'project.freezed.dart';
 part 'project.g.dart';
+
+// Compatibility name embedded in existing Freezed output.
+const utcIso = utcIso8601;
 
 @freezed
 class Project with _$Project {
@@ -15,8 +17,8 @@ class Project with _$Project {
     @Default('folder') String? icon,
     @JsonKey(name: 'is_inbox') @Default(false) bool isInbox,
     @JsonKey(name: 'sort_order') @Default(0) int sortOrder,
-    @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-    @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt,
+    @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+    @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt,
   }) = _Project;
 
   factory Project.fromJson(Map<String, dynamic> json) =>

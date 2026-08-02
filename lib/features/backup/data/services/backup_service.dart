@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:taskboi_backup_core/taskboi_backup_core.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart' as engine;
 
 import '../../../../core/database/database.dart';
 
@@ -8,9 +9,10 @@ class BackupService {
   final AppDatabase _db;
   final BackupArchiveCodec _codec;
 
-  BackupService(this._db,
-      {BackupArchiveCodec codec = const BackupArchiveCodec()})
-      : _codec = codec;
+  BackupService(
+    this._db, {
+    BackupArchiveCodec codec = const BackupArchiveCodec(),
+  }) : _codec = codec;
 
   /// Exports all user data to a JSON string
   Future<String> exportToJson(String userId) async {
@@ -36,15 +38,17 @@ class BackupService {
         backupTasks.add(backupTask);
       }
 
-      backupProjects.add(BackupProject(
-        id: project.id,
-        name: project.name,
-        color: project.color,
-        icon: project.icon ?? 'folder',
-        isInbox: project.isInbox,
-        sortOrder: project.sortOrder,
-        tasks: backupTasks,
-      ));
+      backupProjects.add(
+        BackupProject(
+          id: project.id,
+          name: project.name,
+          color: project.color,
+          icon: project.icon ?? 'folder',
+          isInbox: project.isInbox,
+          sortOrder: project.sortOrder,
+          tasks: backupTasks,
+        ),
+      );
     }
 
     final backupData = BackupArchive(
@@ -71,25 +75,26 @@ class BackupService {
     // Get comments
     final comments = await _db.getComments(task.id);
     final backupComments = comments
-        .map((c) => BackupComment(
-              id: c.id,
-              content: c.content,
-              createdAt: c.createdAt ?? DateTime.now(),
-            ))
+        .map(
+          (c) => BackupComment(
+            id: c.id,
+            content: c.content,
+            createdAt: c.createdAt ?? DateTime.now(),
+          ),
+        )
         .toList();
 
     return BackupTask(
       id: task.id,
       title: task.title,
       description: task.description,
-      dueDate: task.dueDate?.toIso8601String().split('T').first,
+      dueDate: engine.civilDateIso8601(task.dueDate),
       priority: task.priority,
       isCompleted: task.isCompleted,
       completedAt: task.completedAt,
       sortOrder: task.sortOrder,
       recurrenceRule: task.recurrenceRule,
-      recurrenceAnchorDate:
-          task.recurrenceAnchorDate?.toIso8601String().split('T').first,
+      recurrenceAnchorDate: engine.civilDateIso8601(task.recurrenceAnchorDate),
       subtasks: backupSubtasks,
       comments: backupComments,
     );
@@ -120,10 +125,7 @@ class BackupService {
         taskCount: taskCount,
       );
     } catch (e) {
-      return ImportResult(
-        success: false,
-        error: e.toString(),
-      );
+      return ImportResult(success: false, error: e.toString());
     }
   }
 
@@ -150,18 +152,20 @@ class BackupService {
   Future<void> _importProject(BackupProject project, String userId) async {
     final now = DateTime.now();
 
-    await _db.upsertProject(ProjectsCompanion(
-      id: Value(project.id),
-      userId: Value(userId),
-      name: Value(project.name),
-      color: Value(project.color),
-      icon: Value(project.icon),
-      isInbox: Value(project.isInbox),
-      sortOrder: Value(project.sortOrder),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-      isPendingSync: const Value(true),
-    ));
+    await _db.upsertProject(
+      ProjectsCompanion(
+        id: Value(project.id),
+        userId: Value(userId),
+        name: Value(project.name),
+        color: Value(project.color),
+        icon: Value(project.icon),
+        isInbox: Value(project.isInbox),
+        sortOrder: Value(project.sortOrder),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+        isPendingSync: const Value(true),
+      ),
+    );
 
     // Import tasks
     for (final task in project.tasks) {
@@ -188,36 +192,40 @@ class BackupService {
       recurrenceAnchorDate = DateTime.tryParse(task.recurrenceAnchorDate!);
     }
 
-    await _db.upsertTask(TasksCompanion(
-      id: Value(task.id),
-      projectId: Value(projectId),
-      userId: Value(userId),
-      parentId: Value(parentId),
-      title: Value(task.title),
-      description: Value(task.description),
-      dueDate: Value(dueDate),
-      priority: Value(task.priority),
-      isCompleted: Value(task.isCompleted),
-      completedAt: Value(task.completedAt),
-      sortOrder: Value(task.sortOrder),
-      recurrenceRule: Value(task.recurrenceRule),
-      recurrenceAnchorDate: Value(recurrenceAnchorDate),
-      createdAt: Value(now),
-      updatedAt: Value(now),
-      isPendingSync: const Value(true),
-    ));
+    await _db.upsertTask(
+      TasksCompanion(
+        id: Value(task.id),
+        projectId: Value(projectId),
+        userId: Value(userId),
+        parentId: Value(parentId),
+        title: Value(task.title),
+        description: Value(task.description),
+        dueDate: Value(dueDate),
+        priority: Value(task.priority),
+        isCompleted: Value(task.isCompleted),
+        completedAt: Value(task.completedAt),
+        sortOrder: Value(task.sortOrder),
+        recurrenceRule: Value(task.recurrenceRule),
+        recurrenceAnchorDate: Value(recurrenceAnchorDate),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+        isPendingSync: const Value(true),
+      ),
+    );
 
     // Import comments
     for (final comment in task.comments) {
-      await _db.upsertComment(CommentsCompanion(
-        id: Value(comment.id),
-        taskId: Value(task.id),
-        userId: Value(userId),
-        content: Value(comment.content),
-        createdAt: Value(comment.createdAt),
-        updatedAt: Value(now),
-        isPendingSync: const Value(true),
-      ));
+      await _db.upsertComment(
+        CommentsCompanion(
+          id: Value(comment.id),
+          taskId: Value(task.id),
+          userId: Value(userId),
+          content: Value(comment.content),
+          createdAt: Value(comment.createdAt),
+          updatedAt: Value(now),
+          isPendingSync: const Value(true),
+        ),
+      );
     }
 
     // Import subtasks

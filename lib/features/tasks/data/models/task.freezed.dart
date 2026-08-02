@@ -29,14 +29,14 @@ mixin _$Task {
   String? get parentId => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
-  @JsonKey(name: 'due_date', toJson: dateOnly)
+  @JsonKey(name: 'due_date', toJson: civilDateIso8601)
   DateTime? get dueDate => throw _privateConstructorUsedError;
   @JsonKey(name: 'due_time')
   String? get dueTime => throw _privateConstructorUsedError;
   int get priority => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_completed')
   bool get isCompleted => throw _privateConstructorUsedError;
-  @JsonKey(name: 'completed_at', toJson: utcIso)
+  @JsonKey(name: 'completed_at', toJson: utcIso8601)
   DateTime? get completedAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'sort_order')
   int get sortOrder => throw _privateConstructorUsedError;
@@ -44,11 +44,11 @@ mixin _$Task {
   String? get recurrenceRule => throw _privateConstructorUsedError;
   @JsonKey(name: 'recurrence_parent_id')
   String? get recurrenceParentId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+  @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
   DateTime? get recurrenceAnchorDate => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Task to a JSON map.
@@ -72,18 +72,18 @@ abstract class $TaskCopyWith<$Res> {
       @JsonKey(name: 'parent_id') String? parentId,
       String title,
       String? description,
-      @JsonKey(name: 'due_date', toJson: dateOnly) DateTime? dueDate,
+      @JsonKey(name: 'due_date', toJson: civilDateIso8601) DateTime? dueDate,
       @JsonKey(name: 'due_time') String? dueTime,
       int priority,
       @JsonKey(name: 'is_completed') bool isCompleted,
-      @JsonKey(name: 'completed_at', toJson: utcIso) DateTime? completedAt,
+      @JsonKey(name: 'completed_at', toJson: utcIso8601) DateTime? completedAt,
       @JsonKey(name: 'sort_order') int sortOrder,
       @JsonKey(name: 'recurrence_rule') String? recurrenceRule,
       @JsonKey(name: 'recurrence_parent_id') String? recurrenceParentId,
-      @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+      @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
       DateTime? recurrenceAnchorDate,
-      @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
+      @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -206,18 +206,18 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
       @JsonKey(name: 'parent_id') String? parentId,
       String title,
       String? description,
-      @JsonKey(name: 'due_date', toJson: dateOnly) DateTime? dueDate,
+      @JsonKey(name: 'due_date', toJson: civilDateIso8601) DateTime? dueDate,
       @JsonKey(name: 'due_time') String? dueTime,
       int priority,
       @JsonKey(name: 'is_completed') bool isCompleted,
-      @JsonKey(name: 'completed_at', toJson: utcIso) DateTime? completedAt,
+      @JsonKey(name: 'completed_at', toJson: utcIso8601) DateTime? completedAt,
       @JsonKey(name: 'sort_order') int sortOrder,
       @JsonKey(name: 'recurrence_rule') String? recurrenceRule,
       @JsonKey(name: 'recurrence_parent_id') String? recurrenceParentId,
-      @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+      @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
       DateTime? recurrenceAnchorDate,
-      @JsonKey(name: 'created_at', toJson: utcIso) DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) DateTime? updatedAt});
+      @JsonKey(name: 'created_at', toJson: utcIso8601) DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -333,18 +333,18 @@ class _$TaskImpl extends _Task {
       @JsonKey(name: 'parent_id') this.parentId,
       required this.title,
       this.description,
-      @JsonKey(name: 'due_date', toJson: dateOnly) this.dueDate,
+      @JsonKey(name: 'due_date', toJson: civilDateIso8601) this.dueDate,
       @JsonKey(name: 'due_time') this.dueTime,
       this.priority = 0,
       @JsonKey(name: 'is_completed') this.isCompleted = false,
-      @JsonKey(name: 'completed_at', toJson: utcIso) this.completedAt,
+      @JsonKey(name: 'completed_at', toJson: utcIso8601) this.completedAt,
       @JsonKey(name: 'sort_order') this.sortOrder = 0,
       @JsonKey(name: 'recurrence_rule') this.recurrenceRule,
       @JsonKey(name: 'recurrence_parent_id') this.recurrenceParentId,
-      @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+      @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
       this.recurrenceAnchorDate,
-      @JsonKey(name: 'created_at', toJson: utcIso) this.createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso) this.updatedAt})
+      @JsonKey(name: 'created_at', toJson: utcIso8601) this.createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601) this.updatedAt})
       : super._();
 
   factory _$TaskImpl.fromJson(Map<String, dynamic> json) =>
@@ -366,7 +366,7 @@ class _$TaskImpl extends _Task {
   @override
   final String? description;
   @override
-  @JsonKey(name: 'due_date', toJson: dateOnly)
+  @JsonKey(name: 'due_date', toJson: civilDateIso8601)
   final DateTime? dueDate;
   @override
   @JsonKey(name: 'due_time')
@@ -378,7 +378,7 @@ class _$TaskImpl extends _Task {
   @JsonKey(name: 'is_completed')
   final bool isCompleted;
   @override
-  @JsonKey(name: 'completed_at', toJson: utcIso)
+  @JsonKey(name: 'completed_at', toJson: utcIso8601)
   final DateTime? completedAt;
   @override
   @JsonKey(name: 'sort_order')
@@ -390,13 +390,13 @@ class _$TaskImpl extends _Task {
   @JsonKey(name: 'recurrence_parent_id')
   final String? recurrenceParentId;
   @override
-  @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+  @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
   final DateTime? recurrenceAnchorDate;
   @override
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   final DateTime? createdAt;
   @override
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   final DateTime? updatedAt;
 
   @override
@@ -486,19 +486,21 @@ abstract class _Task extends Task {
       @JsonKey(name: 'parent_id') final String? parentId,
       required final String title,
       final String? description,
-      @JsonKey(name: 'due_date', toJson: dateOnly) final DateTime? dueDate,
+      @JsonKey(name: 'due_date', toJson: civilDateIso8601)
+      final DateTime? dueDate,
       @JsonKey(name: 'due_time') final String? dueTime,
       final int priority,
       @JsonKey(name: 'is_completed') final bool isCompleted,
-      @JsonKey(name: 'completed_at', toJson: utcIso)
+      @JsonKey(name: 'completed_at', toJson: utcIso8601)
       final DateTime? completedAt,
       @JsonKey(name: 'sort_order') final int sortOrder,
       @JsonKey(name: 'recurrence_rule') final String? recurrenceRule,
       @JsonKey(name: 'recurrence_parent_id') final String? recurrenceParentId,
-      @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+      @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
       final DateTime? recurrenceAnchorDate,
-      @JsonKey(name: 'created_at', toJson: utcIso) final DateTime? createdAt,
-      @JsonKey(name: 'updated_at', toJson: utcIso)
+      @JsonKey(name: 'created_at', toJson: utcIso8601)
+      final DateTime? createdAt,
+      @JsonKey(name: 'updated_at', toJson: utcIso8601)
       final DateTime? updatedAt}) = _$TaskImpl;
   const _Task._() : super._();
 
@@ -520,7 +522,7 @@ abstract class _Task extends Task {
   @override
   String? get description;
   @override
-  @JsonKey(name: 'due_date', toJson: dateOnly)
+  @JsonKey(name: 'due_date', toJson: civilDateIso8601)
   DateTime? get dueDate;
   @override
   @JsonKey(name: 'due_time')
@@ -531,7 +533,7 @@ abstract class _Task extends Task {
   @JsonKey(name: 'is_completed')
   bool get isCompleted;
   @override
-  @JsonKey(name: 'completed_at', toJson: utcIso)
+  @JsonKey(name: 'completed_at', toJson: utcIso8601)
   DateTime? get completedAt;
   @override
   @JsonKey(name: 'sort_order')
@@ -543,13 +545,13 @@ abstract class _Task extends Task {
   @JsonKey(name: 'recurrence_parent_id')
   String? get recurrenceParentId;
   @override
-  @JsonKey(name: 'recurrence_anchor_date', toJson: dateOnly)
+  @JsonKey(name: 'recurrence_anchor_date', toJson: civilDateIso8601)
   DateTime? get recurrenceAnchorDate;
   @override
-  @JsonKey(name: 'created_at', toJson: utcIso)
+  @JsonKey(name: 'created_at', toJson: utcIso8601)
   DateTime? get createdAt;
   @override
-  @JsonKey(name: 'updated_at', toJson: utcIso)
+  @JsonKey(name: 'updated_at', toJson: utcIso8601)
   DateTime? get updatedAt;
 
   /// Create a copy of Task
