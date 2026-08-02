@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  taskboi_task_engine:
+    path: packages/taskboi_task_engine
 
   # UI
   cupertino_icons: ^1.0.8

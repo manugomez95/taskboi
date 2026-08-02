@@ -1,13 +1,8 @@
 import 'package:taskboi/l10n/generated/app_localizations.dart';
+import 'package:taskboi_task_engine/taskboi_task_engine.dart';
 
-/// Available task sort options
-enum TaskSortOption {
-  manual,
-  priority,
-  dueDate,
-  title,
-  createdAt,
-}
+export 'package:taskboi_task_engine/taskboi_task_engine.dart'
+    show TaskSortOption;
 
 /// Extension to provide display labels for sort options
 extension TaskSortOptionExtension on TaskSortOption {
