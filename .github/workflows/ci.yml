@@ -41,6 +41,8 @@ jobs:
         run: scripts/ci/technical-health.sh flutter-analyze
       - name: Test with inert public config
         run: scripts/ci/technical-health.sh flutter-test
+      - name: Check task engine package
+        run: scripts/ci/technical-health.sh task-engine
 
   backend-static:
     name: Migrations and Supabase functions

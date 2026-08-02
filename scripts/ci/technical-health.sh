@@ -56,6 +56,17 @@ run_component() {
         flutter test --dart-define-from-file="$config_file"
       )
       ;;
+    task-engine)
+      require_pinned_flutter
+      (
+        cd "$REPO_ROOT/packages/taskboi_task_engine"
+        trap 'rm -f pubspec.lock' EXIT
+        dart pub get
+        dart format --output=none --set-exit-if-changed lib test
+        dart analyze
+        dart test
+      )
+      ;;
     backend-migrations)
       "$REPO_ROOT/scripts/ci/check-migrations.sh"
       ;;
@@ -92,6 +103,7 @@ else
     flutter-format
     flutter-analyze
     flutter-test
+    task-engine
     backend-migrations
     backend-check
     backend-test
