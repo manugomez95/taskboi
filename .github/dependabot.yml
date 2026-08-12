@@ -6,13 +6,15 @@ updates:
       interval: weekly
       day: monday
     groups:
-      dart-dependencies:
+      dart-compatible:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
       day: monday
     groups:
-      github-actions:
+      github-actions-compatible:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
