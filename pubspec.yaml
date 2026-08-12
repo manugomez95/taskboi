@@ -40,7 +40,7 @@ dependencies:
   google_sign_in: ^6.2.2
   crypto: ^3.0.6
   url_launcher: ^6.2.5
-  app_links: ^6.3.3
+  app_links: ^7.2.1
 
   # Encryption
   flutter_secure_storage: ^9.0.0
