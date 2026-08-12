@@ -43,7 +43,7 @@ dependencies:
   app_links: ^6.3.3
 
   # Encryption
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^10.3.1
   pointycastle: ^3.7.3
   bip39: ^1.0.6
 
