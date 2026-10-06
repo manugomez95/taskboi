@@ -11,8 +11,10 @@ void main() {
   });
 
   test('single and multiple urls', () {
-    expect(links('mira https://a.com/x y http://b.org'),
-        ['https://a.com/x', 'http://b.org']);
+    expect(links('mira https://a.com/x y http://b.org'), [
+      'https://a.com/x',
+      'http://b.org',
+    ]);
     final s = parseLinks('ve a https://a.com ya');
     expect(s.map((e) => e.text).join(), 've a https://a.com ya');
     expect(s[1].uri, Uri.parse('https://a.com'));
@@ -26,26 +28,33 @@ void main() {
 
   test('trailing punctuation excluded', () {
     expect(links('ver https://a.com.'), ['https://a.com']);
-    expect(links('(https://a.com), y https://b.com!'),
-        ['https://a.com', 'https://b.com']);
+    expect(links('(https://a.com), y https://b.com!'), [
+      'https://a.com',
+      'https://b.com',
+    ]);
     expect(parseLinks('ver https://a.com.').last.text, '.');
   });
 
   test('balanced parentheses kept', () {
-    expect(links('https://en.wikipedia.org/wiki/Foo_(bar)'),
-        ['https://en.wikipedia.org/wiki/Foo_(bar)']);
-    expect(links('(https://en.wikipedia.org/wiki/Foo_(bar))'),
-        ['https://en.wikipedia.org/wiki/Foo_(bar)']);
+    expect(links('https://en.wikipedia.org/wiki/Foo_(bar)'), [
+      'https://en.wikipedia.org/wiki/Foo_(bar)',
+    ]);
+    expect(links('(https://en.wikipedia.org/wiki/Foo_(bar))'), [
+      'https://en.wikipedia.org/wiki/Foo_(bar)',
+    ]);
   });
 
   test('query and fragment preserved', () {
-    expect(links('https://a.com/p?q=1&r=2#frag'),
-        ['https://a.com/p?q=1&r=2#frag']);
+    expect(links('https://a.com/p?q=1&r=2#frag'), [
+      'https://a.com/p?q=1&r=2#frag',
+    ]);
   });
 
   test('non-http schemes and bare domains ignored', () {
     expect(
-        links('javascript:alert(1) ftp://a.com file:///etc foo.com'), isEmpty);
+      links('javascript:alert(1) ftp://a.com file:///etc foo.com'),
+      isEmpty,
+    );
   });
 
   test('unicode around url', () {

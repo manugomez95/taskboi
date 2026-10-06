@@ -8,8 +8,9 @@ void main() {
   test(
     'upgrades a v9 database and removes retired assignment and webhook columns',
     () async {
-      final tempDirectory =
-          await Directory.systemTemp.createTemp('taskboi_v9_migration_');
+      final tempDirectory = await Directory.systemTemp.createTemp(
+        'taskboi_v9_migration_',
+      );
       final databaseFile = File('${tempDirectory.path}/taskboi.sqlite');
       AppDatabase? database;
 
@@ -73,10 +74,7 @@ void main() {
   );
 }
 
-Future<Set<String>> _columnNames(
-  AppDatabase database,
-  String table,
-) async {
+Future<Set<String>> _columnNames(AppDatabase database, String table) async {
   final rows = await database.customSelect('PRAGMA table_info($table)').get();
   return rows.map((row) => row.read<String>('name')).toSet();
 }

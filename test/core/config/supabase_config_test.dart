@@ -15,11 +15,13 @@ void main() {
     test('rejects missing settings without including their values', () {
       expect(
         () => PublicClientConfig.fromValues(url: '', anonKey: 'marker-value'),
-        throwsA(isA<StateError>().having(
-          (error) => error.message,
-          'message',
-          isNot(contains('marker-value')),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            isNot(contains('marker-value')),
+          ),
+        ),
       );
       expect(
         () => PublicClientConfig.fromValues(
