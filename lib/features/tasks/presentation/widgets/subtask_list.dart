@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/linkified_text.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskboi/l10n/generated/app_localizations.dart';
@@ -257,7 +258,7 @@ class _SubtaskTileState extends ConsumerState<SubtaskTile>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LinkifiedText(
                           subtask.title,
                           style: TextStyle(
                             fontSize: 14,
@@ -271,7 +272,7 @@ class _SubtaskTileState extends ConsumerState<SubtaskTile>
                             subtask.description!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
-                            child: Text(
+                            child: LinkifiedText(
                               subtask.description!,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
