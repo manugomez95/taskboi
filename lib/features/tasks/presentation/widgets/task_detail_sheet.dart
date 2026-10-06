@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/linkified_text.dart';
 import 'package:flutter/services.dart';
 import 'package:taskboi/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -630,7 +631,7 @@ class _TaskDetailSheetState extends ConsumerState<TaskDetailSheet> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
+                                        LinkifiedText(
                                           _task.title,
                                           style: theme.textTheme.titleMedium
                                               ?.copyWith(
@@ -647,7 +648,7 @@ class _TaskDetailSheetState extends ConsumerState<TaskDetailSheet> {
                                           Padding(
                                             padding:
                                                 const EdgeInsets.only(top: 4),
-                                            child: Text(
+                                            child: LinkifiedText(
                                               _task.description!,
                                               style: theme.textTheme.bodyMedium
                                                   ?.copyWith(

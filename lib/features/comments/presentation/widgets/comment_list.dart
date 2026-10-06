@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/linkified_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -588,7 +589,7 @@ class _CommentTileState extends ConsumerState<CommentTile> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LinkifiedText(
                     widget.comment.content,
                     style: theme.textTheme.bodyMedium,
                   ),
