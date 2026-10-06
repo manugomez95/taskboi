@@ -23,14 +23,14 @@ void main() {
   });
 
   Widget host(Widget child, {VoidCallback? onOuterTap}) => MaterialApp(
-    home: Scaffold(
-      body: GestureDetector(
-        onTap: onOuterTap,
-        behavior: HitTestBehavior.opaque,
-        child: Center(child: child),
-      ),
-    ),
-  );
+        home: Scaffold(
+          body: GestureDetector(
+            onTap: onOuterTap,
+            behavior: HitTestBehavior.opaque,
+            child: Center(child: child),
+          ),
+        ),
+      );
 
   testWidgets('tapping link launches url and does not hit outer tap', (
     tester,

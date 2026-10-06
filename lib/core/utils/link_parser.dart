@@ -78,9 +78,8 @@ String _trimTrailing(String url) {
 }
 
 Uri? _toUri(String url) {
-  final withScheme = url.toLowerCase().startsWith('www.')
-      ? 'https://$url'
-      : url;
+  final withScheme =
+      url.toLowerCase().startsWith('www.') ? 'https://$url' : url;
   final uri = Uri.tryParse(withScheme);
   if (uri == null) return null;
   if (uri.scheme != 'http' && uri.scheme != 'https') return null;
